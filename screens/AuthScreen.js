@@ -6,8 +6,9 @@ export default function AuthScreen({ onLoginSuccess }) {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [name, setName] = useState(''); // Only for register
+    const [name, setName] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleAuth = async () => {
         if (!email || !password) return Alert.alert("Error", "Campos vacíos");
@@ -53,13 +54,26 @@ export default function AuthScreen({ onLoginSuccess }) {
                     autoCapitalize="none"
                 />
 
-                <TextInput
-                    style={styles.input}
-                    placeholder="Contraseña"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                />
+                <View style={styles.passwordContainer}>
+                    <TextInput
+                        style={styles.passwordInput}
+                        placeholder="Contraseña"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword}
+                        onKeyPress={(e) => {
+                            if (e.nativeEvent.key === 'Enter') {
+                                handleAuth();
+                            }
+                        }}
+                    />
+                    <TouchableOpacity
+                        style={styles.eyeIcon}
+                        onPress={() => setShowPassword(!showPassword)}
+                    >
+                        <Text style={{ fontSize: 20 }}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
+                    </TouchableOpacity>
+                </View>
 
                 <TouchableOpacity style={styles.btn} onPress={handleAuth} disabled={loading}>
                     {loading ? <ActivityIndicator color="white" /> : <Text style={styles.btnText}>{isLogin ? "Entrar" : "Registrarse"}</Text>}
@@ -80,6 +94,23 @@ const styles = StyleSheet.create({
     card: { width: 350, padding: 20, backgroundColor: 'white', borderRadius: 10, shadowOpacity: 0.1, shadowRadius: 10 },
     title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: '#FF4500' },
     input: { borderWidth: 1, borderColor: '#ddd', padding: 10, marginBottom: 15, borderRadius: 5, fontSize: 16 },
+    passwordContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 5,
+        marginBottom: 15,
+        paddingRight: 10
+    },
+    passwordInput: {
+        flex: 1,
+        padding: 10,
+        fontSize: 16
+    },
+    eyeIcon: {
+        padding: 5
+    },
     btn: { backgroundColor: '#FF4500', padding: 12, borderRadius: 5, alignItems: 'center' },
     btnText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
     link: { marginTop: 15, textAlign: 'center', color: '#007AFF' }
