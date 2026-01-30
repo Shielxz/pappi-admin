@@ -24,7 +24,18 @@
         },
         "web": {
             "favicon": "./assets/favicon.png",
-            "bundler": "metro"
+            "bundler": "metro",
+            "name": "Pappi Admin",
+            "shortName": "Pappi",
+            "description": "Panel de Administración para Pappi Delivery",
+            "backgroundColor": "#000000",
+            "themeColor": "#FF4500",
+            "meta": {
+                "og:title": "Pappi Admin Panel",
+                "og:description": "Gestiona tu restaurante y pedidos en tiempo real.",
+                "og:image": "./assets/icon.png",
+                "twitter:card": "summary_large_image"
+            }
         },
         "extra": {
             "eas": {
