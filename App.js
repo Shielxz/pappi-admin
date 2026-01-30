@@ -5,7 +5,7 @@ import AuthScreen from './screens/AuthScreen';
 import MenuScreen from './screens/MenuScreen';
 import OrdersScreen from './screens/OrdersScreen';
 import ConfigScreen from './screens/ConfigScreen';
-import SuperAdminScreen from './screens/SuperAdminScreen';
+import SuperAdminLoginScreen from './screens/SuperAdminLoginScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import { colors } from './theme/colors';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -23,10 +23,17 @@ export default function App() {
     const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
     const [toast, setToast] = useState(null);
 
+    // Super Admin Portal Mode Detection
+    const [isSuperPortal, setIsSuperPortal] = useState(false);
 
     // Load session from localStorage
     useEffect(() => {
         if (Platform.OS === 'web') {
+            const path = window.location.pathname;
+            if (path.includes('/admin') || path.includes('/super')) {
+                setIsSuperPortal(true);
+            }
+
             const savedUser = localStorage.getItem('user');
             const savedToken = localStorage.getItem('authToken');
             if (savedUser && savedToken) {
@@ -118,6 +125,9 @@ export default function App() {
 
 
     if (!user) {
+        if (isSuperPortal) {
+            return <SuperAdminLoginScreen onLoginSuccess={handleLogin} />;
+        }
         return <AuthScreen onLoginSuccess={handleLogin} />;
     }
 
