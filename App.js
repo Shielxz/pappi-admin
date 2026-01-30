@@ -6,6 +6,7 @@ import MenuScreen from './screens/MenuScreen';
 import OrdersScreen from './screens/OrdersScreen';
 import ConfigScreen from './screens/ConfigScreen';
 import SuperAdminLoginScreen from './screens/SuperAdminLoginScreen';
+import SuperAdminScreen from './screens/SuperAdminScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import { colors } from './theme/colors';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
