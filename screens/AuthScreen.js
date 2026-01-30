@@ -179,43 +179,8 @@ export default function AuthScreen({ onLoginSuccess }) {
                     </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={{ marginTop: 25, borderTopWidth: 1, borderTopColor: '#333', paddingTop: 15, alignItems: 'center' }}
-                    onPress={() => {
-                        if (Platform.OS === 'web') {
-                            setShowServerConfig(!showServerConfig);
-                        } else {
-                            Alert.alert("Info", "Esta opción es solo para Web por ahora");
-                        }
-                    }}
-                >
-                    <Text style={{ textAlign: 'center', color: colors.textMuted, fontSize: 13 }}>
-                        <Ionicons name="server-outline" size={14} color={colors.textMuted} /> Configurar Servidor
-                    </Text>
-                </TouchableOpacity>
 
-                {showServerConfig && (
-                    <View style={{ marginTop: 15, width: '100%' }}>
-                        <Text style={{ color: '#888', marginBottom: 5, fontSize: 12 }}>URL del Backend (API):</Text>
-                        <TextInput
-                            style={[styles.input, { backgroundColor: '#111', borderWidth: 1, borderColor: '#444', borderRadius: 8, paddingHorizontal: 10 }]}
-                            placeholder="https://...pinggy.link"
-                            placeholderTextColor="#555"
-                            value={customServerUrl}
-                            onChangeText={setCustomServerUrl}
-                            autoCapitalize="none"
-                        />
-                        <TouchableOpacity
-                            style={{ backgroundColor: '#333', padding: 10, borderRadius: 8, marginTop: 10, alignItems: 'center' }}
-                            onPress={() => {
-                                if (customServerUrl) {
-                                    localStorage.setItem('server_url', customServerUrl);
-                                    window.location.reload();
-                                }
-                            }}
-                        >
-                    </View>
-        </View>
+            </View>
             );
 }
 
