@@ -121,6 +121,38 @@ export default function App() {
         return <AuthScreen onLoginSuccess={handleLogin} />;
     }
 
+    // 4. SUPER ADMIN INTERFACE (Strict Separation)
+    if (user.role === 'superadmin') {
+        return (
+            <View style={styles.container}>
+                {/* Simplified Sidebar for Super Admin */}
+                <View style={styles.sidebar}>
+                    <View style={styles.branding}>
+                        <Text style={styles.logo}>⚡ Pappi<Text style={{ color: colors.primary }}>GOD</Text></Text>
+                        <Text style={styles.welcomeText}>Super Admin Access</Text>
+                    </View>
+
+                    <TouchableOpacity style={[styles.menuItem, styles.menuItemActive]}>
+                        <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
+                        <Text style={[styles.menuText, styles.menuTextActive]}>Aprobaciones</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+                        <Ionicons name="log-out-outline" size={20} color={colors.danger} />
+                        <Text style={{ color: colors.danger, fontWeight: 'bold', marginLeft: 10 }}>Cerrar Sesión</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Content Area */}
+                <View style={styles.content}>
+                    <SuperAdminScreen onExit={() => { }} />
+                </View>
+                <StatusBar style="auto" />
+            </View>
+        );
+    }
+
+    // 5. STANDARD RESTAURANT OWNER INTERFACE
     return (
         <View style={styles.container}>
             <View style={styles.sidebar}>
@@ -177,21 +209,6 @@ export default function App() {
                             <Text style={[styles.menuText, currentScreen === 'config' && styles.menuTextActive]}>Ajustes</Text>
                         </View>
                     </TouchableOpacity>
-
-                    {user.role === 'admin' && (
-                        <TouchableOpacity
-                            style={[styles.menuItem, currentScreen === 'superadmin' && styles.menuItemActive]}
-                            onPress={() => setCurrentScreen('superadmin')}
-                        >
-                            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                                <Ionicons name="people-circle-outline" size={20} color={currentScreen === 'superadmin' ? colors.primary : colors.textSecondary} />
-                                <Text style={[styles.menuText, currentScreen === 'superadmin' && styles.menuTextActive]}>Verificar</Text>
-                            </View>
-                            <View style={styles.badge}>
-                                <Text style={styles.badgeText}>ADMIN</Text>
-                            </View>
-                        </TouchableOpacity>
-                    )}
                 </View>
 
                 <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
@@ -209,9 +226,7 @@ export default function App() {
                 {currentScreen === 'orders' && restaurant && <OrdersScreen user={user} restaurant={restaurant} socket={socket} onOrdersUpdate={(count) => {
                     // This will be called by OrdersScreen if we want to sync total active orders
                 }} />}
-                {currentScreen === 'menu' && restaurant && <MenuScreen user={user} restaurant={restaurant} />}
                 {currentScreen === 'config' && restaurant && <ConfigScreen user={user} restaurant={restaurant} onRestaurantUpdate={setRestaurant} />}
-                {currentScreen === 'superadmin' && <SuperAdminScreen onExit={() => setCurrentScreen('dashboard')} />}
             </View>
 
             {/* Toast System */}
