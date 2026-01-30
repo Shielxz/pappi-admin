@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image, Platform } from 'react-native';
+import { colors } from '../theme/colors';
+import { Ionicons } from '@expo/vector-icons';
 
-const API_URL = 'http://192.168.1.92:3000/api/menu';
+
+import { API_URL as ACTUAL_API_URL, SERVER_URL as BASE_URL, DEFAULT_HEADERS } from '../services/config';
+
+const API_URL = ACTUAL_API_URL + '/menu';
 
 export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
+    const [lat, setLat] = useState('');
+    const [lng, setLng] = useState('');
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
 
@@ -15,11 +22,30 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
             setName(restaurant.name || '');
             setDescription(restaurant.description || '');
             setCategory(restaurant.category || '');
+            setLat(restaurant.lat ? restaurant.lat.toString() : '');
+            setLng(restaurant.lng ? restaurant.lng.toString() : '');
             if (restaurant.image_url) {
-                setImagePreview(`http://192.168.1.92:3000${restaurant.image_url}`);
+                setImagePreview(`${BASE_URL}${restaurant.image_url}`);
             }
         }
     }, [restaurant]);
+
+    const getCurrentLocation = () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLat(position.coords.latitude.toString());
+                    setLng(position.coords.longitude.toString());
+                    alert("📍 Ubicación obtenida correctamente");
+                },
+                (error) => {
+                    alert("Error al obtener GPS: " + error.message);
+                }
+            );
+        } else {
+            alert("Tu navegador no soporta geolocalización");
+        }
+    };
 
     const handleImageChange = (e) => {
         if (e.target.files && e.target.files[0]) {
@@ -40,6 +66,8 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
             formData.append('name', name);
             formData.append('description', description);
             formData.append('category', category);
+            formData.append('lat', lat);
+            formData.append('lng', lng);
 
             if (imageFile) {
                 formData.append('image', imageFile);
@@ -47,6 +75,7 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
 
             const res = await fetch(`${API_URL}/restaurants/${restaurant.id}`, {
                 method: 'PUT',
+                headers: DEFAULT_HEADERS,
                 body: formData
             });
 
@@ -69,7 +98,7 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
             <View style={styles.section}>
                 <Text style={styles.label}>Logo del Restaurante:</Text>
                 {imagePreview && (
-                    <Image source={{ uri: imagePreview }} style={styles.logoPreview} />
+                    <Image source={{ uri: imagePreview }} style={styles.logoPreview} resizeMode="cover" />
                 )}
                 <input
                     type="file"
@@ -83,37 +112,73 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
                 <Text style={styles.label}>Nombre del Restaurante:</Text>
                 <TextInput
                     style={styles.input}
+                    placeholderTextColor="#666"
                     value={name}
                     onChangeText={setName}
                     placeholder="Mi Restaurante"
                 />
+
             </View>
 
             <View style={styles.section}>
                 <Text style={styles.label}>Descripción:</Text>
                 <TextInput
                     style={[styles.input, styles.textArea]}
+                    placeholderTextColor="#666"
                     value={description}
                     onChangeText={setDescription}
                     placeholder="Describe tu restaurante..."
                     multiline
                     numberOfLines={4}
                 />
+
             </View>
 
             <View style={styles.section}>
                 <Text style={styles.label}>Categoría:</Text>
                 <TextInput
                     style={styles.input}
+                    placeholderTextColor="#666"
                     value={category}
                     onChangeText={setCategory}
                     placeholder="Ej: Comida Mexicana, Fast Food, etc."
                 />
+
+            </View>
+
+            <View style={styles.section}>
+                <Text style={styles.label}>📍 Ubicación del Negocio (GPS):</Text>
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                    <TextInput
+                        style={[styles.input, { flex: 1 }]}
+                        placeholderTextColor="#666"
+                        value={lat}
+                        onChangeText={setLat}
+                        placeholder="Latitud"
+                        keyboardType="numeric"
+                    />
+
+                    <TextInput
+                        style={[styles.input, { flex: 1 }]}
+                        placeholderTextColor="#666"
+                        value={lng}
+                        onChangeText={setLng}
+                        placeholder="Longitud"
+                        keyboardType="numeric"
+                    />
+
+                </View>
+                <TouchableOpacity onPress={getCurrentLocation} style={{ marginTop: 10, padding: 10, backgroundColor: 'rgba(41, 121, 255, 0.2)', borderRadius: 5, alignItems: 'center' }}>
+                    <Text style={{ color: colors.accent, fontWeight: 'bold' }}>📡 Usar mi ubicación actual</Text>
+                </TouchableOpacity>
+
             </View>
 
             <TouchableOpacity style={styles.saveBtn} onPress={saveSettings}>
-                <Text style={styles.saveBtnText}>💾 Guardar Cambios</Text>
+                <Ionicons name="save-outline" size={24} color="white" style={{ marginRight: 10 }} />
+                <Text style={styles.saveBtnText}>Guardar Cambios</Text>
             </TouchableOpacity>
+
 
             <View style={styles.infoSection}>
                 <Text style={styles.infoTitle}>ℹ️ Información</Text>
@@ -126,41 +191,62 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
-    header: { fontSize: 28, fontWeight: 'bold', marginBottom: 20 },
-    section: { backgroundColor: 'white', padding: 15, borderRadius: 10, marginBottom: 15 },
-    label: { fontSize: 16, fontWeight: '600', marginBottom: 8, color: '#333' },
+    container: { flex: 1, padding: 30 },
+    header: { fontSize: 32, fontWeight: 'bold', marginBottom: 20, color: colors.textPrimary },
+    section: {
+        backgroundColor: colors.bgCard,
+        padding: 20,
+        borderRadius: 16,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: colors.glassBorder,
+        ...Platform.select({
+            web: { boxShadow: '0 4px 20px rgba(0,0,0,0.2)', backdropFilter: 'blur(10px)' },
+            default: { elevation: 2 }
+        })
+    },
+    label: { fontSize: 16, fontWeight: '600', marginBottom: 12, color: colors.textSecondary },
     input: {
         borderWidth: 1,
-        borderColor: '#ddd',
-        padding: 12,
+        borderColor: '#333',
+        padding: 15,
         borderRadius: 8,
         fontSize: 16,
-        backgroundColor: '#f9f9f9'
+        backgroundColor: '#222',
+        color: 'white'
     },
-    textArea: { minHeight: 100, textAlignVertical: 'top' },
+    textArea: { minHeight: 120, textAlignVertical: 'top' },
     logoPreview: {
-        width: 200,
-        height: 150,
-        borderRadius: 10,
-        marginBottom: 10,
-        resizeMode: 'cover'
+        width: '100%',
+        maxWidth: 300,
+        height: 200,
+        borderRadius: 12,
+        marginBottom: 15,
+        alignSelf: 'center'
     },
     saveBtn: {
-        backgroundColor: '#4CAF50',
-        padding: 15,
-        borderRadius: 10,
+        backgroundColor: colors.secondary,
+        padding: 18,
+        borderRadius: 12,
         alignItems: 'center',
         marginTop: 10,
-        marginBottom: 20
+        marginBottom: 30,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        ...Platform.select({
+            web: { boxShadow: '0 4px 15px rgba(0, 230, 118, 0.3)' }
+        })
     },
-    saveBtnText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+    saveBtnText: { color: '#000', fontSize: 18, fontWeight: 'bold' },
     infoSection: {
-        backgroundColor: '#E3F2FD',
-        padding: 15,
-        borderRadius: 10,
-        marginBottom: 30
+        backgroundColor: 'rgba(41, 121, 255, 0.1)',
+        padding: 20,
+        borderRadius: 16,
+        marginBottom: 30,
+        borderWidth: 1,
+        borderColor: 'rgba(41, 121, 255, 0.2)'
     },
-    infoTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: '#1976D2' },
-    infoText: { fontSize: 14, color: '#555', marginBottom: 5 }
+    infoTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: colors.accent },
+    infoText: { fontSize: 14, color: colors.textSecondary, marginBottom: 8 }
 });
+

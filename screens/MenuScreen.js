@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Modal, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Modal, Image, Platform } from 'react-native';
+import { colors } from '../theme/colors';
+import { Ionicons } from '@expo/vector-icons';
 
-const API_URL = 'http://192.168.1.92:3000/api/menu';
-const BASE_URL = 'http://192.168.1.92:3000';
 
-export default function MenuScreen({ user }) {
-    const [restaurant, setRestaurant] = useState(null);
+import { API_URL as ACTUAL_API_URL, SERVER_URL as BASE_URL, DEFAULT_HEADERS } from '../services/config';
+
+const API_URL = ACTUAL_API_URL + '/menu';
+
+export default function MenuScreen({ user, restaurant }) {
+
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [products, setProducts] = useState([]);
@@ -25,26 +29,17 @@ export default function MenuScreen({ user }) {
     const [productImageFile, setProductImageFile] = useState(null);
 
     useEffect(() => {
-        loadRestaurant();
-    }, []);
-
-    const loadRestaurant = async () => {
-        try {
-            const res = await fetch(`${API_URL}/restaurants`);
-            const data = await res.json();
-            const myRestaurant = data.find(r => r.owner_id === user.id);
-            if (myRestaurant) {
-                setRestaurant(myRestaurant);
-                loadCategories(myRestaurant.id);
-            }
-        } catch (e) {
-            console.error(e);
+        if (restaurant) {
+            loadCategories(restaurant.id);
         }
-    };
+    }, [restaurant]);
+
 
     const loadCategories = async (restaurantId) => {
         try {
-            const res = await fetch(`${API_URL}/categories/${restaurantId}`);
+            const res = await fetch(`${API_URL}/categories/${restaurantId}`, {
+                headers: DEFAULT_HEADERS
+            });
             const data = await res.json();
             setCategories(data);
         } catch (e) {
@@ -54,7 +49,9 @@ export default function MenuScreen({ user }) {
 
     const loadProductsByCategory = async (categoryId) => {
         try {
-            const res = await fetch(`${API_URL}/products/category/${categoryId}`);
+            const res = await fetch(`${API_URL}/products/category/${categoryId}`, {
+                headers: DEFAULT_HEADERS
+            });
             const data = await res.json();
             setProducts(data);
         } catch (e) {
@@ -68,7 +65,10 @@ export default function MenuScreen({ user }) {
         try {
             const res = await fetch(`${API_URL}/restaurants`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...DEFAULT_HEADERS
+                },
                 body: JSON.stringify({
                     owner_id: user.id,
                     name: restaurantName,
@@ -76,7 +76,7 @@ export default function MenuScreen({ user }) {
                 })
             });
             Alert.alert("Éxito", "Restaurante creado");
-            loadRestaurant();
+            // Note: In a real app we'd reload the restaurant data in the parent App component
         } catch (e) {
             Alert.alert("Error", e.message);
         }
@@ -101,6 +101,7 @@ export default function MenuScreen({ user }) {
 
             await fetch(url, {
                 method,
+                headers: DEFAULT_HEADERS,
                 body: formData
             });
 
@@ -121,7 +122,10 @@ export default function MenuScreen({ user }) {
                 style: "destructive",
                 onPress: async () => {
                     try {
-                        await fetch(`${API_URL}/categories/${id}`, { method: 'DELETE' });
+                        await fetch(`${API_URL}/categories/${id}`, {
+                            method: 'DELETE',
+                            headers: DEFAULT_HEADERS
+                        });
                         loadCategories(restaurant.id);
                         if (selectedCategory?.id === id) {
                             setSelectedCategory(null);
@@ -158,6 +162,7 @@ export default function MenuScreen({ user }) {
 
             await fetch(url, {
                 method,
+                headers: DEFAULT_HEADERS,
                 body: formData
             });
 
@@ -178,7 +183,10 @@ export default function MenuScreen({ user }) {
                 style: "destructive",
                 onPress: async () => {
                     try {
-                        await fetch(`${API_URL}/products/${id}`, { method: 'DELETE' });
+                        await fetch(`${API_URL}/products/${id}`, {
+                            method: 'DELETE',
+                            headers: DEFAULT_HEADERS
+                        });
                         loadProductsByCategory(selectedCategory.id);
                     } catch (e) {
                         Alert.alert("Error", e.message);
@@ -235,21 +243,31 @@ export default function MenuScreen({ user }) {
                 <Text style={styles.header}>{selectedCategory.name}</Text>
 
                 <TouchableOpacity style={styles.btn} onPress={() => setShowProductModal(true)}>
-                    <Text style={styles.btnText}>+ Agregar Producto</Text>
+                    <Ionicons name="add-circle-outline" size={20} color="white" style={{ marginRight: 8 }} />
+                    <Text style={styles.btnText}>Agregar Producto</Text>
                 </TouchableOpacity>
+
 
                 <View style={styles.productsGrid}>
                     {products.map(product => (
                         <View key={product.id} style={styles.productCard}>
-                            {product.image_path && (
+                            {product.image_path ? (
                                 <Image
-                                    source={{ uri: `${BASE_URL}${product.image_path}` }}
+                                    source={{
+                                        uri: product.image_path.startsWith('http')
+                                            ? product.image_path
+                                            : `${BASE_URL}${product.image_path}`
+                                    }}
                                     style={styles.productImage}
                                 />
+                            ) : (
+                                <View style={[styles.productImage, { backgroundColor: '#222', justifyContent: 'center', alignItems: 'center' }]}>
+                                    <Ionicons name="restaurant-outline" size={40} color={colors.textMuted} />
+                                </View>
                             )}
                             <Text style={styles.productName}>{product.name}</Text>
                             <Text style={styles.productPrice}>${product.price}</Text>
-                            {product.description ? <Text style={styles.productDesc}>{product.description}</Text> : null}
+                            {product.description ? <Text style={styles.productDesc} numberOfLines={2}>{product.description}</Text> : null}
                             <View style={styles.productActions}>
                                 <TouchableOpacity onPress={() => {
                                     setEditingProduct(product);
@@ -257,16 +275,17 @@ export default function MenuScreen({ user }) {
                                     setProductPrice(product.price.toString());
                                     setProductDesc(product.description || '');
                                     setShowProductModal(true);
-                                }} style={{ marginRight: 10 }}>
-                                    <Text style={{ fontSize: 18 }}>✏️</Text>
+                                }} style={styles.actionBtn}>
+                                    <Ionicons name="create-outline" size={20} color={colors.primary} />
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => deleteProduct(product.id)}>
-                                    <Text style={{ color: 'red', fontSize: 18 }}>🗑️</Text>
+                                <TouchableOpacity onPress={() => deleteProduct(product.id)} style={styles.actionBtn}>
+                                    <Ionicons name="trash-outline" size={20} color={colors.danger} />
                                 </TouchableOpacity>
                             </View>
                         </View>
                     ))}
                 </View>
+
 
                 {/* PRODUCT MODAL */}
                 <Modal visible={showProductModal} animationType="slide" transparent={true}>
@@ -277,21 +296,25 @@ export default function MenuScreen({ user }) {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Nombre del Producto"
+                                placeholderTextColor={colors.textMuted}
                                 value={productName}
                                 onChangeText={setProductName}
                             />
                             <TextInput
                                 style={styles.input}
                                 placeholder="Precio"
+                                placeholderTextColor={colors.textMuted}
                                 value={productPrice}
                                 onChangeText={setProductPrice}
                             />
                             <TextInput
                                 style={styles.input}
                                 placeholder="Descripción"
+                                placeholderTextColor={colors.textMuted}
                                 value={productDesc}
                                 onChangeText={setProductDesc}
                             />
+
 
                             <Text style={styles.label}>Imagen del Producto:</Text>
                             <input type="file" accept="image/*" onChange={handleProductImageChange} style={{ marginBottom: 15 }} />
@@ -315,8 +338,10 @@ export default function MenuScreen({ user }) {
             <Text style={styles.header}>Mis Menús</Text>
 
             <TouchableOpacity style={styles.btn} onPress={() => setShowCategoryModal(true)}>
-                <Text style={styles.btnText}>+ Crear Nuevo Menú</Text>
+                <Ionicons name="add-circle-outline" size={20} color="white" style={{ marginRight: 8 }} />
+                <Text style={styles.btnText}>Crear Nuevo Menú</Text>
             </TouchableOpacity>
+
 
             <View style={styles.categoriesGrid}>
                 {categories.map(category => (
@@ -330,12 +355,16 @@ export default function MenuScreen({ user }) {
                     >
                         {category.image_path ? (
                             <Image
-                                source={{ uri: `${BASE_URL}${category.image_path}` }}
+                                source={{
+                                    uri: category.image_path.startsWith('http')
+                                        ? category.image_path
+                                        : `${BASE_URL}${category.image_path}`
+                                }}
                                 style={styles.categoryImage}
                             />
                         ) : (
                             <View style={styles.categoryImagePlaceholder}>
-                                <Text style={{ fontSize: 40 }}>📋</Text>
+                                <Ionicons name="fast-food-outline" size={50} color={colors.textMuted} />
                             </View>
                         )}
                         <Text style={styles.categoryName}>{category.name}</Text>
@@ -346,19 +375,20 @@ export default function MenuScreen({ user }) {
                                 setEditingCategory(category);
                                 setCategoryName(category.name);
                                 setShowCategoryModal(true);
-                            }} style={{ marginRight: 10 }}>
-                                <Text style={{ fontSize: 18 }}>✏️</Text>
+                            }} style={styles.actionBtn}>
+                                <Ionicons name="create-outline" size={20} color={colors.primary} />
                             </TouchableOpacity>
                             <TouchableOpacity onPress={(e) => {
                                 e.stopPropagation();
                                 deleteCategory(category.id);
-                            }}>
-                                <Text style={{ color: 'red', fontSize: 18 }}>🗑️</Text>
+                            }} style={styles.actionBtn}>
+                                <Ionicons name="trash-outline" size={20} color={colors.danger} />
                             </TouchableOpacity>
                         </View>
                     </TouchableOpacity>
                 ))}
             </View>
+
 
             {/* CATEGORY MODAL */}
             <Modal visible={showCategoryModal} animationType="slide" transparent={true}>
@@ -369,9 +399,11 @@ export default function MenuScreen({ user }) {
                         <TextInput
                             style={styles.input}
                             placeholder="Nombre del Menú (ej: Hamburguesas)"
+                            placeholderTextColor={colors.textMuted}
                             value={categoryName}
                             onChangeText={setCategoryName}
                         />
+
 
                         <Text style={styles.label}>Imagen del Menú:</Text>
                         <input type="file" accept="image/*" onChange={handleCategoryImageChange} style={{ marginBottom: 15 }} />
@@ -391,68 +423,100 @@ export default function MenuScreen({ user }) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
-    header: { fontSize: 28, fontWeight: 'bold', marginBottom: 20 },
-    backBtn: { marginBottom: 15 },
-    backBtnText: { fontSize: 16, color: '#007AFF', fontWeight: '600' },
-    label: { fontSize: 14, fontWeight: '600', marginBottom: 8, color: '#555' },
-    input: { borderWidth: 1, borderColor: '#ddd', padding: 10, marginBottom: 10, borderRadius: 5, fontSize: 16, backgroundColor: 'white' },
-    btn: { backgroundColor: '#FF4500', padding: 15, borderRadius: 10, alignItems: 'center', marginBottom: 20 },
+    container: { flex: 1, padding: 30 },
+    header: { fontSize: 32, fontWeight: 'bold', marginBottom: 20, color: colors.textPrimary },
+    backBtn: { marginBottom: 20, flexDirection: 'row', alignItems: 'center' },
+    backBtnText: { fontSize: 16, color: colors.accent, fontWeight: '600', marginLeft: 5 },
+    label: { fontSize: 14, fontWeight: '600', marginBottom: 8, color: colors.textSecondary },
+    input: {
+        borderWidth: 1,
+        borderColor: '#333',
+        padding: 15,
+        marginBottom: 15,
+        borderRadius: 8,
+        fontSize: 16,
+        backgroundColor: '#222',
+        color: 'white'
+    },
+    btn: {
+        backgroundColor: colors.primary,
+        padding: 15,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginBottom: 20,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignSelf: 'flex-start',
+        paddingHorizontal: 25
+    },
     btnText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
-    btnCancel: { backgroundColor: '#999', padding: 12, borderRadius: 5, alignItems: 'center', marginTop: 10 },
-    btnCancelText: { color: 'white', fontSize: 16 },
-    categoriesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 15 },
+    btnCancel: { backgroundColor: '#333', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 10 },
+    btnCancelText: { color: '#ccc', fontSize: 16 },
+    categoriesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 20 },
     categoryCard: {
         width: 200,
-        backgroundColor: 'white',
-        borderRadius: 12,
+        backgroundColor: colors.bgCard,
+        borderRadius: 16,
         padding: 15,
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 3
+        borderWidth: 1,
+        borderColor: colors.glassBorder,
+        ...Platform.select({
+            web: { boxShadow: '0 4px 20px rgba(0,0,0,0.2)', backdropFilter: 'blur(10px)' },
+            default: { elevation: 3 }
+        })
     },
-    categoryImage: { width: 160, height: 120, borderRadius: 8, marginBottom: 10 },
+    categoryImage: { width: '100%', height: 120, borderRadius: 12, marginBottom: 12 },
     categoryImagePlaceholder: {
-        width: 160,
+        width: '100%',
         height: 120,
-        borderRadius: 8,
-        marginBottom: 10,
-        backgroundColor: '#f0f0f0',
+        borderRadius: 12,
+        marginBottom: 12,
+        backgroundColor: '#111',
         justifyContent: 'center',
         alignItems: 'center'
     },
-    categoryName: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
-    categoryActions: { flexDirection: 'row', marginTop: 10 },
-    productsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 15, marginTop: 20 },
+    categoryName: { fontSize: 18, fontWeight: 'bold', marginBottom: 15, color: colors.textPrimary, textAlign: 'center' },
+    categoryActions: { flexDirection: 'row', gap: 15 },
+
+    productsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 20, marginTop: 10 },
     productCard: {
-        width: 180,
-        backgroundColor: 'white',
-        borderRadius: 10,
-        padding: 12,
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 2
+        width: 220,
+        backgroundColor: colors.bgCard,
+        borderRadius: 16,
+        padding: 15,
+        borderWidth: 1,
+        borderColor: colors.glassBorder,
+        ...Platform.select({
+            web: { boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }
+        })
     },
-    productImage: { width: '100%', height: 120, borderRadius: 8, marginBottom: 10 },
-    productName: { fontSize: 16, fontWeight: 'bold' },
-    productPrice: { fontSize: 18, color: '#FF4500', marginTop: 5 },
-    productDesc: { fontSize: 14, color: '#666', marginTop: 5 },
-    productActions: { flexDirection: 'row', marginTop: 10, justifyContent: 'flex-end' },
+    productImage: { width: '100%', height: 140, borderRadius: 12, marginBottom: 12 },
+    productName: { fontSize: 17, fontWeight: 'bold', color: colors.textPrimary },
+    productPrice: { fontSize: 18, color: colors.primary, marginTop: 4, fontWeight: 'bold' },
+    productDesc: { fontSize: 13, color: colors.textMuted, marginTop: 5, height: 35 },
+    productActions: { flexDirection: 'row', marginTop: 15, justifyContent: 'flex-end', gap: 10 },
+    actionBtn: { padding: 5 },
+
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(0,0,0,0.8)',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        backdropFilter: 'blur(5px)'
     },
     modalContent: {
         width: '90%',
         maxWidth: 500,
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 10
+        backgroundColor: '#1E1E1E',
+        padding: 30,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: colors.glassBorder,
+        ...Platform.select({
+            web: { boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }
+        })
     },
-    modalTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }
+    modalTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: colors.textPrimary }
 });
+
