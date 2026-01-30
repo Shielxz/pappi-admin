@@ -41,7 +41,15 @@ export default function AuthScreen({ onLoginSuccess }) {
             } else {
                 // Register V2
                 const res = await api.registerV2(name, email, password, phone, name);
-                showAlert("Registro Exitoso", "Revise la consola del servidor para ver los códigos de verificación (MOCK).");
+
+                // Show codes in Alert for easy testing
+                let msg = "Cuenta creada.";
+                if (res.emailCode) msg += `\nEmail Code: ${res.emailCode}`;
+                if (res.smsCode) msg += `\nSMS Code: ${res.smsCode}`;
+
+                showAlert("Registro Exitoso", msg);
+                console.log("CODES:", res); // Also log to console
+
                 setPendingUserId(res.userId);
                 setVerificationMode(true);
             }
