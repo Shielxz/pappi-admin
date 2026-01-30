@@ -5,6 +5,7 @@ import AuthScreen from './screens/AuthScreen';
 import MenuScreen from './screens/MenuScreen';
 import OrdersScreen from './screens/OrdersScreen';
 import ConfigScreen from './screens/ConfigScreen';
+import SuperAdminScreen from './screens/SuperAdminScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import { colors } from './theme/colors';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -176,6 +177,21 @@ export default function App() {
                             <Text style={[styles.menuText, currentScreen === 'config' && styles.menuTextActive]}>Ajustes</Text>
                         </View>
                     </TouchableOpacity>
+
+                    {user.role === 'admin' && (
+                        <TouchableOpacity
+                            style={[styles.menuItem, currentScreen === 'superadmin' && styles.menuItemActive]}
+                            onPress={() => setCurrentScreen('superadmin')}
+                        >
+                            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                <Ionicons name="people-circle-outline" size={20} color={currentScreen === 'superadmin' ? colors.primary : colors.textSecondary} />
+                                <Text style={[styles.menuText, currentScreen === 'superadmin' && styles.menuTextActive]}>Verificar</Text>
+                            </View>
+                            <View style={styles.badge}>
+                                <Text style={styles.badgeText}>ADMIN</Text>
+                            </View>
+                        </TouchableOpacity>
+                    )}
                 </View>
 
                 <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
@@ -193,7 +209,9 @@ export default function App() {
                 {currentScreen === 'orders' && restaurant && <OrdersScreen user={user} restaurant={restaurant} socket={socket} onOrdersUpdate={(count) => {
                     // This will be called by OrdersScreen if we want to sync total active orders
                 }} />}
+                {currentScreen === 'menu' && restaurant && <MenuScreen user={user} restaurant={restaurant} />}
                 {currentScreen === 'config' && restaurant && <ConfigScreen user={user} restaurant={restaurant} onRestaurantUpdate={setRestaurant} />}
+                {currentScreen === 'superadmin' && <SuperAdminScreen onExit={() => setCurrentScreen('dashboard')} />}
             </View>
 
             {/* Toast System */}

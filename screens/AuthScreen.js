@@ -214,81 +214,60 @@ export default function AuthScreen({ onLoginSuccess }) {
                                 }
                             }}
                         >
-                            <Text style={{ color: 'white', fontWeight: 'bold' }}>Guardar y Recargar</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={{ padding: 10, alignItems: 'center' }}
-                            onPress={() => {
-                                localStorage.removeItem('server_url');
-                                window.location.reload();
-                            }}
-                        >
-                            <Text style={{ color: colors.error, fontSize: 12 }}>Resetear a Default</Text>
-                        </TouchableOpacity>
                     </View>
-                )}
-
-                <TouchableOpacity
-                    style={{ marginTop: 20 }}
-                    onPress={() => setShowSuperAdmin(true)}
-                >
-                    <Text style={{ color: '#444', fontSize: 10 }}>Acceso Super Admin (Test)</Text>
-                </TouchableOpacity>
-
-            </View>
         </View>
-    );
+            );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' },
-    card: {
-        width: '90%',
-        maxWidth: 400,
-        padding: 40,
-        backgroundColor: colors.bgCard,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: colors.glassBorder,
-        ...Platform.select({
-            web: { boxShadow: '0 8px 32px rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)' },
-            default: { elevation: 5 }
+            const styles = StyleSheet.create({
+                container: {flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' },
+            card: {
+                width: '90%',
+            maxWidth: 400,
+            padding: 40,
+            backgroundColor: colors.bgCard,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: colors.glassBorder,
+            ...Platform.select({
+                web: {boxShadow: '0 8px 32px rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)' },
+            default: {elevation: 5 }
         })
     },
-    logoContainer: { alignItems: 'center', marginBottom: 30 },
-    appTitle: { fontSize: 32, fontWeight: 'bold', color: 'white', letterSpacing: -1 },
-    title: { fontSize: 18, color: colors.textSecondary, marginBottom: 30, textAlign: 'center' },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#222',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#333',
-        marginBottom: 15,
-        paddingHorizontal: 15
+            logoContainer: {alignItems: 'center', marginBottom: 30 },
+            appTitle: {fontSize: 32, fontWeight: 'bold', color: 'white', letterSpacing: -1 },
+            title: {fontSize: 18, color: colors.textSecondary, marginBottom: 30, textAlign: 'center' },
+            inputContainer: {
+                flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#222',
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: '#333',
+            marginBottom: 15,
+            paddingHorizontal: 15
     },
-    inputIcon: { marginRight: 10 },
-    input: {
-        flex: 1,
-        paddingVertical: 15,
-        fontSize: 16,
-        color: 'white',
-        ...Platform.select({
-            web: { outlineStyle: 'none' }
+            inputIcon: {marginRight: 10 },
+            input: {
+                flex: 1,
+            paddingVertical: 15,
+            fontSize: 16,
+            color: 'white',
+            ...Platform.select({
+                web: {outlineStyle: 'none' }
         })
     },
-    eyeIcon: { padding: 5 },
-    btn: {
-        backgroundColor: colors.primary,
-        paddingVertical: 15,
-        borderRadius: 12,
-        alignItems: 'center',
-        marginTop: 10,
-        ...Platform.select({
-            web: { boxShadow: '0 4px 15px rgba(255, 69, 0, 0.4)' }
+            eyeIcon: {padding: 5 },
+            btn: {
+                backgroundColor: colors.primary,
+            paddingVertical: 15,
+            borderRadius: 12,
+            alignItems: 'center',
+            marginTop: 10,
+            ...Platform.select({
+                web: {boxShadow: '0 4px 15px rgba(255, 69, 0, 0.4)' }
         })
     },
-    btnText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
-    link: { marginTop: 10, textAlign: 'center', color: colors.accent, fontWeight: '600' }
+            btnText: {color: 'white', fontWeight: 'bold', fontSize: 16 },
+            link: {marginTop: 10, textAlign: 'center', color: colors.accent, fontWeight: '600' }
 });
