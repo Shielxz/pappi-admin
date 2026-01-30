@@ -13,9 +13,14 @@ export default function SuperAdminLoginScreen({ onLoginSuccess }) {
     const handleLogin = async () => {
         if (!email || !password) return alert("Ingrese credenciales");
 
+        let loginEmail = email;
+        if (!loginEmail.includes('@')) {
+            loginEmail = `${loginEmail}@admin.com`;
+        }
+
         setLoading(true);
         try {
-            const res = await api.login(email, password);
+            const res = await api.login(loginEmail, password);
             if (res.user.role !== 'superadmin') {
                 alert("ACCESO DENEGADO: Esta cuenta no es Super Admin");
                 setLoading(false);

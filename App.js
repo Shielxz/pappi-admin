@@ -24,7 +24,13 @@ export default function App() {
     const [toast, setToast] = useState(null);
 
     // Super Admin Portal Mode Detection
-    const [isSuperPortal, setIsSuperPortal] = useState(false);
+    const [isSuperPortal, setIsSuperPortal] = useState(() => {
+        if (Platform.OS === 'web') {
+            const path = window.location.pathname;
+            return path.includes('/admin') || path.includes('/super');
+        }
+        return false;
+    });
 
     // Load session from localStorage
     useEffect(() => {
