@@ -13,10 +13,16 @@ export default function SuperAdminLoginScreen({ onLoginSuccess }) {
     const handleLogin = async () => {
         if (!email || !password) return alert("Ingrese credenciales");
 
-        let loginEmail = email;
+        let loginEmail = email.trim(); // Remove spaces
         if (!loginEmail.includes('@')) {
             loginEmail = `${loginEmail}@admin.com`;
         }
+
+        console.log("🔐 ADMIN LOGIN ATTEMPT:", {
+            original: email,
+            transformed: loginEmail,
+            passLength: password.length
+        });
 
         setLoading(true);
         try {
