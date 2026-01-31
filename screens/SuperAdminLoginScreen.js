@@ -46,6 +46,7 @@ export default function SuperAdminLoginScreen({ onLoginSuccess }) {
                     <Ionicons name="shield-checkmark" size={40} color={colors.primary} />
                     <Text style={styles.title}>Super Admin Portal</Text>
                     <Text style={styles.subtitle}>Acceso Restringido</Text>
+                    <Text style={{ color: 'orange', fontSize: 10, marginTop: 5 }}>v2.0 (Live)</Text>
                 </View>
 
                 <View style={styles.inputContainer}>
