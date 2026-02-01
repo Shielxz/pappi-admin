@@ -11,10 +11,12 @@ export default function AuthScreen({ onLoginSuccess }) {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Verification Logic
     const [verificationMode, setVerificationMode] = useState(false);
@@ -59,7 +61,10 @@ export default function AuthScreen({ onLoginSuccess }) {
 
     const handleAuth = async () => {
         if (!email || !password) return showAlert("Error", "Ingrese todos los campos", "error");
-        if (!isLogin && (!name || !phone)) return showAlert("Error", "Ingrese todos los campos", "error");
+        if (!isLogin) {
+            if (!name || !phone || !confirmPassword) return showAlert("Error", "Ingrese todos los campos", "error");
+            if (password !== confirmPassword) return showAlert("Error", "Las contraseñas no coinciden", "error");
+        }
 
         setLoading(true);
         try {
@@ -198,11 +203,6 @@ export default function AuthScreen({ onLoginSuccess }) {
                         value={password}
                         onChangeText={setPassword}
                         secureTextEntry={!showPassword}
-                        onKeyPress={(e) => {
-                            if (e.nativeEvent.key === 'Enter') {
-                                handleAuth();
-                            }
-                        }}
                     />
                     <TouchableOpacity
                         style={styles.eyeIcon}
@@ -211,6 +211,31 @@ export default function AuthScreen({ onLoginSuccess }) {
                         <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={colors.textSecondary} />
                     </TouchableOpacity>
                 </View>
+
+                {!isLogin && (
+                    <View style={styles.inputContainer}>
+                        <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Confirmar Contraseña"
+                            placeholderTextColor={colors.textMuted}
+                            value={confirmPassword}
+                            onChangeText={setConfirmPassword}
+                            secureTextEntry={!showConfirmPassword}
+                            onKeyPress={(e) => {
+                                if (e.nativeEvent.key === 'Enter') {
+                                    handleAuth();
+                                }
+                            }}
+                        />
+                        <TouchableOpacity
+                            style={styles.eyeIcon}
+                            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                            <Ionicons name={showConfirmPassword ? "eye-off-outline" : "eye-outline"} size={20} color={colors.textSecondary} />
+                        </TouchableOpacity>
+                    </View>
+                )}
 
                 <TouchableOpacity style={styles.btn} onPress={handleAuth} disabled={loading}>
                     <Text style={styles.btnText}>{isLogin ? "Iniciar Sesión" : "Crear Cuenta PENDIENTE"}</Text>
