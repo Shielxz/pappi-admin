@@ -36,33 +36,39 @@ export default function App() {
     // Load session from localStorage
     useEffect(() => {
         if (Platform.OS === 'web') {
-            const path = window.location.pathname;
-            if (path.includes('/admin') || path.includes('/super')) {
-                setIsSuperPortal(true);
-            }
+            const userKey = isSuperPortal ? 'super_user' : 'user';
+            const tokenKey = isSuperPortal ? 'super_token' : 'authToken';
 
-            const savedUser = localStorage.getItem('user');
-            const savedToken = localStorage.getItem('authToken');
+            const savedUser = localStorage.getItem(userKey);
+            const savedToken = localStorage.getItem(tokenKey);
+
             if (savedUser && savedToken) {
                 const userData = JSON.parse(savedUser);
+                // Security check: If in normal mode but found superadmin in shared storage (edge case), ignore
+                if (!isSuperPortal && userData.role === 'superadmin') return;
+
                 setUser(userData);
                 setAuthToken(savedToken);
                 loadRestaurant(userData.id);
             }
         }
-    }, []);
+    }, [isSuperPortal]);
 
     const handleLogin = (userData, token) => {
         setUser(userData);
         setAuthToken(token);
         if (Platform.OS === 'web') {
-            localStorage.setItem('user', JSON.stringify(userData));
-            localStorage.setItem('authToken', token);
+            const userKey = isSuperPortal ? 'super_user' : 'user';
+            const tokenKey = isSuperPortal ? 'super_token' : 'authToken';
+
+            localStorage.setItem(userKey, JSON.stringify(userData));
+            localStorage.setItem(tokenKey, token);
         }
         loadRestaurant(userData.id);
     };
 
     const loadRestaurant = async (userId) => {
+        // ... (same as before) ...
         console.log(`📡 Intentando cargar restaurante para usuario ID: ${userId}...`);
         try {
             const res = await fetch(`${API_URL}/menu/restaurants`, {
@@ -71,14 +77,9 @@ export default function App() {
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
             const data = await res.json();
-            console.log(`📦 Restaurantes encontrados (${data.length}):`, data.map(r => `[${r.name}: owner=${r.owner_id}]`));
-
             const myRestaurant = data.find(r => Number(r.owner_id) === Number(userId));
             if (myRestaurant) {
-                console.log(`✅ Restaurante asignado: ${myRestaurant.name} (ID: ${myRestaurant.id})`);
                 setRestaurant(myRestaurant);
-            } else {
-                console.warn(`⚠️ No se encontró restaurante para el dueño ID: ${userId}`);
             }
         } catch (e) {
             console.error("❌ Error en loadRestaurant:", e);
@@ -95,16 +96,13 @@ export default function App() {
             });
 
             newSocket.on('connect', () => {
-                console.log('✅ Socket admin conectado');
                 newSocket.emit('register_admin', { restaurantId: restaurant.id });
             });
 
             newSocket.on('new_order', (order) => {
-                console.log('🔔 Nuevo pedido recibido!');
                 setPendingOrdersCount(prev => prev + 1);
                 showToast("¡Nuevo pedido recibido!");
             });
-
 
             setSocket(newSocket);
             return () => newSocket.disconnect();
@@ -120,8 +118,10 @@ export default function App() {
         setPendingOrdersCount(0);
 
         if (Platform.OS === 'web') {
-            localStorage.removeItem('user');
-            localStorage.removeItem('authToken');
+            const userKey = isSuperPortal ? 'super_user' : 'user';
+            const tokenKey = isSuperPortal ? 'super_token' : 'authToken';
+            localStorage.removeItem(userKey);
+            localStorage.removeItem(tokenKey);
         }
     };
 
