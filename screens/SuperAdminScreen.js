@@ -26,22 +26,33 @@ export default function SuperAdminScreen({ onExit }) {
 
     const handleApprove = async (userId) => {
         try {
+            // Optimistic Update: Remove immediately from UI
+            setUsers(prev => prev.filter(u => u.id !== userId));
             await api.approveUser(userId);
             alert("Usuario Aprobado");
-            fetchPending();
+            // fetchPending(); // No need to re-fetch if we trust the optimistic update
         } catch (e) {
             alert("Error: " + e.message);
+            fetchPending(); // Revert on error
         }
     };
 
     const handleReject = async (userId) => {
         try {
+            setUsers(prev => prev.filter(u => u.id !== userId));
             await api.rejectUser(userId);
             alert("Usuario Rechazado");
-            fetchPending();
         } catch (e) {
             alert("Error: " + e.message);
+            fetchPending();
         }
+    };
+
+    const getRoleLabel = (role) => {
+        if (role === 'admin') return 'DUEÑO RESTAURANTE';
+        if (role === 'driver') return 'REPARTIDOR';
+        if (role === 'client') return 'CLIENTE';
+        return role.toUpperCase();
     };
 
     const renderItem = ({ item }) => (
@@ -51,8 +62,8 @@ export default function SuperAdminScreen({ onExit }) {
                 <Text style={styles.userDetail}>{item.restaurant_name}</Text>
                 <Text style={styles.userDetail}>{item.email}</Text>
                 <Text style={styles.userDetail}>{item.phone}</Text>
-                <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{item.role}</Text>
+                <View style={[styles.badge, { backgroundColor: item.role === 'admin' ? '#2c3e50' : '#333' }]}>
+                    <Text style={styles.badgeText}>{getRoleLabel(item.role)}</Text>
                 </View>
             </View>
             <View style={styles.actions}>
