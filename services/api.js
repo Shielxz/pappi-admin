@@ -1,6 +1,7 @@
 import { API_URL as BASE_URL, DEFAULT_HEADERS } from './config';
 
 export const api = {
+    ver: console.log("✨ API CLIENT v3.0 LOADED ✨"),
     async register(name, email, password, role = 'admin') {
         // Legacy register
         return this.registerV2(name, email, password, '', 'Restaurante Sin Nombre');
@@ -56,11 +57,19 @@ export const api = {
             const text = await response.text();
             try {
                 const data = JSON.parse(text);
-                if (!response.ok) throw new Error(data.error || 'Login failed');
+                if (!response.ok) {
+                    const error = new Error(data.error || 'Login failed');
+                    error.code = data.code;
+                    throw error;
+                }
                 return data;
             } catch (e) {
+                // If it's already an Error object with the message we want, just rethrow it
+                if (e.message && e.message !== "Unexpected token " && !e.message.includes("JSON")) {
+                    throw e;
+                }
                 console.error("[API] Login Parse Error. Raw response:", text);
-                throw new Error("Error de conexión con el servidor (Respuesta no válida). Revisa consola.");
+                throw new Error("Error de conexión con el servidor (Respuesta no válida).");
             }
         } catch (e) {
             throw e;

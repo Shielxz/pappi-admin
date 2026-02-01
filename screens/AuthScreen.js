@@ -107,6 +107,7 @@ export default function AuthScreen({ onLoginSuccess }) {
                     <Text style={styles.appTitle}>⚡ Pappi<Text style={{ color: colors.primary }}>Admin</Text></Text>
                 </View>
                 <Text style={styles.title}>{isLogin ? "Bienvenido de nuevo" : "Registrar Negocio"}</Text>
+                <Text style={{ color: 'gray', fontSize: 10, textAlign: 'center', marginBottom: 10 }}>v3.0 (Anti-Zombie Patch)</Text>
 
                 {!isLogin && (
                     <>
