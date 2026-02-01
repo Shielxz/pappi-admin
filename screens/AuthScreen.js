@@ -73,11 +73,13 @@ export default function AuthScreen({ onLoginSuccess }) {
                 console.log("CODES:", res); // Also log to console
 
                 setPendingUserId(res.userId);
+                // Also setting email in query param style or just context if possible. 
+                // But VerificationScreen props need it.
+                // We'll trust state 'email' variable is still fresh in this component.
                 setVerificationMode(true);
             }
         } catch (e) {
-            // Handle Backend Error Codes
-            // api.js attaches 'code' directly to error, or puts data in 'data'
+            // ... error handling ...
             const errorData = e.data || {};
             const errorCode = e.code || errorData.code;
 
@@ -116,6 +118,7 @@ export default function AuthScreen({ onLoginSuccess }) {
         return (
             <VerificationScreen
                 userId={pendingUserId}
+                email={email} // Passing email here
                 onVerified={() => {
                     setVerificationMode(false);
                     showAlert("Verificado", "Ahora debe esperar la aprobación del administrador para ingresar.");

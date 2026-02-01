@@ -4,16 +4,36 @@ import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 
+import { SOCKET_URL } from '../services/config';
+import io from 'socket.io-client';
+
 export default function SuperAdminScreen({ onExit }) {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchPending();
-        const interval = setInterval(() => {
-            fetchPending(false); // Silent update
-        }, 10000); // Poll every 10s
-        return () => clearInterval(interval);
+
+        // Socket Connection
+        const socket = io(SOCKET_URL);
+
+        socket.on('connect', () => {
+            console.log("🟢 Admin conectado a Socket.IO");
+        });
+
+        socket.on('new_user_pending', (data) => {
+            console.log("🔔 Nuevo usuario detectado:", data);
+            fetchPending(false); // Reload list silently
+            if (Platform.OS === 'web') {
+                // Optional: Desktop notification could go here
+                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'); // Simple ding
+                audio.play().catch(e => console.log("Audio play failed", e));
+            }
+        });
+
+        return () => {
+            socket.disconnect();
+        };
     }, []);
 
     const fetchPending = async (showLoading = true) => {

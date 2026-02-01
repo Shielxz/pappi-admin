@@ -4,7 +4,7 @@ import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 
-export default function VerificationScreen({ userId, onVerified, onCancel }) {
+export default function VerificationScreen({ userId, email, onVerified, onCancel }) {
     const [emailCode, setEmailCode] = useState('');
     const [smsCode, setSmsCode] = useState('');
     const [loading, setLoading] = useState(false);
@@ -14,7 +14,7 @@ export default function VerificationScreen({ userId, onVerified, onCancel }) {
 
         setLoading(true);
         try {
-            const res = await api.verify(userId, emailCode, smsCode);
+            const res = await api.verify(userId, emailCode, smsCode, email);
 
             // If verification successful, show success and callback
             if (Platform.OS === 'web') {

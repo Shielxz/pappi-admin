@@ -1,7 +1,7 @@
 import { API_URL as BASE_URL, DEFAULT_HEADERS } from './config';
 
 export const api = {
-    ver: console.log("✨ API CLIENT v0.5.0 (Alpha) LOADED ✨"),
+    ver: console.log("✨ API CLIENT v0.5.1 (Late-Binding) LOADED ✨"),
     async register(name, email, password, role = 'admin') {
         // Legacy register
         return this.registerV2(name, email, password, '', 'Restaurante Sin Nombre');
@@ -29,12 +29,12 @@ export const api = {
         }
     },
 
-    async verify(userId, emailCode, smsCode) {
+    async verify(userId, emailCode, smsCode, email) {
         try {
             const response = await fetch(`${BASE_URL}/auth/verify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...DEFAULT_HEADERS },
-                body: JSON.stringify({ userId, emailCode, smsCode })
+                body: JSON.stringify({ userId, emailCode, smsCode, email })
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Verification failed');
