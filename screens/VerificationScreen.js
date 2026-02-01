@@ -29,11 +29,10 @@ export default function VerificationScreen({ userId, email, onVerified, onCancel
 
         setLoading(true);
         try {
-            const res = await api.verify(userId, emailCode, smsCode, email);
-            // Pass onVerified as callback to showAlert so it runs ONLY when user clicks OK
-            showAlert("✅ Verificado", res.message, 'success', () => {
-                onVerified();
-            });
+            await api.verify(userId, emailCode, smsCode, email);
+            // Don't show alert here to avoid double-alert with parent. 
+            // Just trigger callback, parent will show final success message.
+            onVerified();
         } catch (e) {
             const msg = e.message || "Error de verificación";
             showAlert("Error", msg, "error");
@@ -67,6 +66,8 @@ export default function VerificationScreen({ userId, email, onVerified, onCancel
                         onChangeText={setEmailCode}
                         keyboardType="numeric"
                         maxLength={6}
+                        onSubmitEditing={() => { /* Optional: focus next field or submit */ }}
+                        returnKeyType="next"
                     />
                 </View>
 
@@ -80,6 +81,8 @@ export default function VerificationScreen({ userId, email, onVerified, onCancel
                         onChangeText={setSmsCode}
                         keyboardType="numeric"
                         maxLength={6}
+                        onSubmitEditing={handleVerify}
+                        returnKeyType="done"
                     />
                 </View>
 

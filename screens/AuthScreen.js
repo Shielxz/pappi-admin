@@ -33,9 +33,7 @@ export default function AuthScreen({ onLoginSuccess }) {
 
     const showAlert = (title, message, type = 'info') => {
         setAlertConfig({ visible: true, title, message, type });
-        if (type === 'success') {
-            setTimeout(() => setAlertConfig(prev => ({ ...prev, visible: false })), 2000);
-        }
+        // Removed auto-close as per user request
     };
 
     const RejectedModal = () => (
