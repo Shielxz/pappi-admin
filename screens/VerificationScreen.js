@@ -1,33 +1,31 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native';
-import { colors } from '../theme/colors';
-import { Ionicons } from '@expo/vector-icons';
-import { api } from '../services/api';
+import { CustomAlert } from '../components/CustomAlert';
 
 export default function VerificationScreen({ userId, email, onVerified, onCancel }) {
     const [emailCode, setEmailCode] = useState('');
     const [smsCode, setSmsCode] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Alert State
+    const [alertConfig, setAlertConfig] = useState({ visible: false, title: '', message: '', type: 'info' });
+
+    const showAlert = (title, message, type = 'info') => {
+        setAlertConfig({ visible: true, title, message, type });
+    };
+
     const handleVerify = async () => {
-        if (!emailCode || !smsCode) return Alert.alert("Error", "Ingrese ambos códigos de verificación");
+        if (!emailCode || !smsCode) return showAlert("Error", "Ingrese ambos códigos de verificación", "error");
 
         setLoading(true);
         try {
             const res = await api.verify(userId, emailCode, smsCode, email);
-
-            // If verification successful, show success and callback
-            if (Platform.OS === 'web') {
-                // Non-blocking alert on web if possible, or standard alert
-                alert("✅ " + res.message);
-            } else {
-                Alert.alert("Verificación Exitosa", res.message);
-            }
-            onVerified();
+            showAlert("✅ Verificado", res.message, 'success');
+            // Slight delay to let user read success message before unmounting
+            setTimeout(() => {
+                onVerified();
+            }, 1500);
         } catch (e) {
             const msg = e.message || "Error de verificación";
-            if (Platform.OS === 'web') alert("❌ " + msg);
-            else Alert.alert("Error", msg);
+            showAlert("Error", msg, "error");
         } finally {
             setLoading(false);
         }
@@ -35,6 +33,13 @@ export default function VerificationScreen({ userId, email, onVerified, onCancel
 
     return (
         <View style={styles.container}>
+            <CustomAlert
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
+            />
             <View style={styles.card}>
                 <View style={styles.logoContainer}>
                     <Text style={styles.appTitle}>Verificación de Cuenta</Text>

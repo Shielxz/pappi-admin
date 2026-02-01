@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform, Modal, ScrollView, ActivityIndicator } from 'react-native';
 import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
+import { CustomAlert } from '../components/CustomAlert';
 import { api } from '../services/api';
 import VerificationScreen from './VerificationScreen';
 import SuperAdminScreen from './SuperAdminScreen';
@@ -46,40 +47,29 @@ export default function AuthScreen({ onLoginSuccess }) {
         </View>
     );
 
-    const showAlert = (title, msg) => {
-        if (Platform.OS === 'web') alert(`${title}: ${msg}`);
-        else Alert.alert(title, msg);
-    };
-
     const handleAuth = async () => {
-        if (!email || !password) return showAlert("Error", "Todos los campos son obligatorios");
-        if (!isLogin && (!name || !phone)) return showAlert("Error", "Nombre y Teléfono son requeridos");
+        if (!email || !password) return showAlert("Error", "Ingrese todos los campos", "error");
+        if (!isLogin && (!name || !phone)) return showAlert("Error", "Ingrese todos los campos", "error");
 
         setLoading(true);
         try {
             if (isLogin) {
                 const res = await api.login(email, password);
-                onLoginSuccess(res.user, res.token);
+                console.log("🔐 ADMIN LOGIN ATTEMPT:", res);
+                if (res.user.role === 'admin' || res.user.role === 'superadmin') {
+                    await storeToken(res.token);
+                    await storeUser(res.user);
+                    navigation.replace(res.user.role === 'superadmin' ? 'SuperAdmin' : 'Home');
+                } else {
+                    showAlert("Acceso Denegado", "No tienes permisos de administrador", "error");
+                }
             } else {
-                // Register V2
-                const res = await api.registerV2(name, email, password, phone, name);
-
-                // Show codes in Alert for easy testing
-                let msg = "Cuenta creada.";
-                if (res.emailCode) msg += `\nEmail Code: ${res.emailCode}`;
-                if (res.smsCode) msg += `\nSMS Code: ${res.smsCode}`;
-
-                showAlert("Registro Exitoso", msg);
-                console.log("CODES:", res); // Also log to console
-
+                const res = await api.registerV2(name, email, password, phone, name); // Assuming 'name' is also restaurantName
+                console.log("CODES:", res);
                 setPendingUserId(res.userId);
-                // Also setting email in query param style or just context if possible. 
-                // But VerificationScreen props need it.
-                // We'll trust state 'email' variable is still fresh in this component.
                 setVerificationMode(true);
             }
         } catch (e) {
-            // ... error handling ...
             const errorData = e.data || {};
             const errorCode = e.code || errorData.code;
 
@@ -91,15 +81,15 @@ export default function AuthScreen({ onLoginSuccess }) {
             }
 
             if (errorCode === 'NOT_VERIFIED' && (e.userId || errorData.userId)) {
-                showAlert("Cuenta no verificada", "Redirigiendo a verificación...");
+                showAlert("Cuenta no verificada", "Redirigiendo a verificación...", "info");
                 setPendingUserId(e.userId || errorData.userId);
-                setVerificationMode(true);
+                setTimeout(() => setVerificationMode(true), 1500);
             } else if (errorCode === 'PENDING_APPROVAL') {
-                showAlert("Pendiente de Aprobación", "Su cuenta ya fue verificada y está siendo revisada por un administrador.");
+                showAlert("Pendiente", "Cuenta en revisión por el administrador.", "info");
             } else if (errorCode === 'REJECTED') {
                 setShowRejectedModal(true);
             } else {
-                showAlert("Error", e.message || "Ocurrió un error inesperado");
+                showAlert("Error", e.message || "Ocurrió un error inesperado", "error");
             }
         } finally {
             setLoading(false);
@@ -121,7 +111,7 @@ export default function AuthScreen({ onLoginSuccess }) {
                 email={email} // Passing email here
                 onVerified={() => {
                     setVerificationMode(false);
-                    showAlert("Verificado", "Ahora debe esperar la aprobación del administrador para ingresar.");
+                    showAlert("Verificado", "Esperando aprobación.", "success");
                     setIsLogin(true);
                 }}
                 onCancel={() => setVerificationMode(false)}

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, 
 import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
+import { CustomAlert } from '../components/CustomAlert';
 
 import { SOCKET_URL } from '../services/config';
 import io from 'socket.io-client';
@@ -10,6 +11,10 @@ import io from 'socket.io-client';
 export default function SuperAdminScreen({ onExit }) {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Alert Config
+    const [alertConfig, setAlertConfig] = useState({ visible: false, title: '', message: '', type: 'info' });
+    const showAlert = (title, message, type = 'info') => setAlertConfig({ visible: true, title, message, type });
 
     useEffect(() => {
         fetchPending();
@@ -27,8 +32,9 @@ export default function SuperAdminScreen({ onExit }) {
             if (Platform.OS === 'web') {
                 // Optional: Desktop notification could go here
                 const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'); // Simple ding
-                audio.play().catch(e => console.log("Audio play failed", e));
+                audio.play().catch(e => console.log("Audio play failed (autoplay policy)", e));
             }
+            showAlert("Nueva Solicitud", `Nuevo usuario verificado: ${data.email || 'Desconocido'}`, 'info');
         });
 
         return () => {
@@ -42,33 +48,29 @@ export default function SuperAdminScreen({ onExit }) {
             const data = await api.getPendingUsers();
             setUsers(data);
         } catch (e) {
-            alert("Error fetching users: " + e.message);
+            console.log("Error fetching users:", e.message);
         } finally {
-            setLoading(false);
+            if (showLoading) setLoading(false);
         }
     };
 
     const handleApprove = async (userId) => {
         try {
-            // Optimistic Update: Remove immediately from UI
-            setUsers(prev => prev.filter(u => u.id !== userId));
             await api.approveUser(userId);
-            alert("Usuario Aprobado");
-            // fetchPending(); // No need to re-fetch if we trust the optimistic update
+            showAlert("Aprobado", "El usuario ha sido aprobado correctamente", "success");
+            fetchPending(false);
         } catch (e) {
-            alert("Error: " + e.message);
-            fetchPending(); // Revert on error
+            showAlert("Error", "No se pudo aprobar al usuario", "error");
         }
     };
 
     const handleReject = async (userId) => {
         try {
-            setUsers(prev => prev.filter(u => u.id !== userId));
             await api.rejectUser(userId);
-            alert("Usuario Rechazado");
+            showAlert("Rechazado", "El usuario ha sido rechazado", "info");
+            fetchPending(false);
         } catch (e) {
-            alert("Error: " + e.message);
-            fetchPending();
+            showAlert("Error", "No se pudo rechazar al usuario", "error");
         }
     };
 
