@@ -30,7 +30,7 @@ export default function AuthScreen({ onLoginSuccess }) {
     const RejectedModal = () => (
         <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-                <Ionicons name="alert-circle" size={50} color={colors.error} />
+                <Ionicons name="alert-circle" size={60} color={colors.primary} />
                 <Text style={styles.modalTitle}>Solicitud Rechazada</Text>
                 <Text style={styles.modalText}>
                     Lo sentimos, tu solicitud de afiliación no fue aprobada por nuestros administradores.{'\n\n'}
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.8)',
+        backgroundColor: 'rgba(0,0,0,0.85)', // Darker overlay focus
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 1000
@@ -279,37 +279,44 @@ const styles = StyleSheet.create({
     modalContent: {
         width: '85%',
         maxWidth: 350,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: '#252525', // Slightly lighter for contrast
         borderRadius: 20,
         padding: 30,
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: colors.error
+        borderColor: colors.primary, // Orange glow
+        ...Platform.select({
+            web: { boxShadow: '0 0 20px rgba(255, 69, 0, 0.3)' }, // Glow effect
+            default: { elevation: 10 }
+        })
     },
     modalTitle: {
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: 'bold',
-        color: colors.error,
-        marginTop: 15,
-        marginBottom: 10
+        color: 'white', // White title pops more vs red
+        marginTop: 20,
+        marginBottom: 10,
+        textAlign: 'center'
     },
     modalText: {
-        color: '#ccc',
+        color: '#dddddd',
         textAlign: 'center',
-        fontSize: 14,
-        lineHeight: 20,
-        marginBottom: 20
+        fontSize: 16,
+        lineHeight: 24,
+        marginBottom: 25
     },
     modalBtn: {
-        backgroundColor: '#333',
-        paddingHorizontal: 30,
+        backgroundColor: colors.primary, // Action color
+        paddingHorizontal: 40,
         paddingVertical: 12,
         borderRadius: 25,
-        borderWidth: 1,
-        borderColor: '#444'
+        ...Platform.select({
+            web: { cursor: 'pointer' }
+        })
     },
     modalBtnText: {
         color: 'white',
-        fontWeight: '600'
+        fontWeight: 'bold',
+        fontSize: 16
     }
 });
