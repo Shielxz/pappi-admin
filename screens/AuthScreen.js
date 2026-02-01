@@ -78,17 +78,18 @@ export default function AuthScreen({ onLoginSuccess }) {
         } catch (e) {
             console.error(e);
 
-            // Handle Backend Error Codes if attached to error object
-            // Configured api.js to attach 'data' to error
+            // Handle Backend Error Codes
+            // api.js attaches 'code' directly to error, or puts data in 'data'
             const errorData = e.data || {};
+            const errorCode = e.code || errorData.code;
 
-            if (errorData.code === 'NOT_VERIFIED' && errorData.userId) {
+            if (errorCode === 'NOT_VERIFIED' && (e.userId || errorData.userId)) {
                 showAlert("Cuenta no verificada", "Redirigiendo a verificación...");
-                setPendingUserId(errorData.userId);
+                setPendingUserId(e.userId || errorData.userId);
                 setVerificationMode(true);
-            } else if (errorData.code === 'PENDING_APPROVAL') {
+            } else if (errorCode === 'PENDING_APPROVAL') {
                 showAlert("Pendiente de Aprobación", "Su cuenta ya fue verificada y está siendo revisada por un administrador.");
-            } else if (errorData.code === 'REJECTED') {
+            } else if (errorCode === 'REJECTED') {
                 setShowRejectedModal(true);
             } else {
                 showAlert("Error", e.message || "Ocurrió un error inesperado");
