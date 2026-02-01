@@ -28,6 +28,16 @@ export default function AuthScreen({ onLoginSuccess }) {
     // New Rejection Modal State
     const [showRejectedModal, setShowRejectedModal] = useState(false);
 
+    // Alert State
+    const [alertConfig, setAlertConfig] = useState({ visible: false, title: '', message: '', type: 'info' });
+
+    const showAlert = (title, message, type = 'info') => {
+        setAlertConfig({ visible: true, title, message, type });
+        if (type === 'success') {
+            setTimeout(() => setAlertConfig(prev => ({ ...prev, visible: false })), 2000);
+        }
+    };
+
     const RejectedModal = () => (
         <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
@@ -125,6 +135,13 @@ export default function AuthScreen({ onLoginSuccess }) {
 
     return (
         <View style={styles.container}>
+            <CustomAlert
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
+            />
             {showRejectedModal && <RejectedModal />}
             <View style={styles.card}>
                 <View style={styles.logoContainer}>
