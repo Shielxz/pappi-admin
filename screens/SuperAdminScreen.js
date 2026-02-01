@@ -5,9 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 import { CustomAlert } from '../components/CustomAlert';
 
-import { SOCKET_URL } from '../services/config';
-import io from 'socket.io-client';
-
 export default function SuperAdminScreen({ onExit }) {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
