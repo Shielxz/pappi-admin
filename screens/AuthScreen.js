@@ -76,12 +76,17 @@ export default function AuthScreen({ onLoginSuccess }) {
                 setVerificationMode(true);
             }
         } catch (e) {
-            console.error(e);
-
             // Handle Backend Error Codes
             // api.js attaches 'code' directly to error, or puts data in 'data'
             const errorData = e.data || {};
             const errorCode = e.code || errorData.code;
+
+            // Only log as error if it's an unexpected crash. Business logic rejections are just info.
+            if (errorCode === 'REJECTED' || errorCode === 'NOT_VERIFIED' || errorCode === 'PENDING_APPROVAL') {
+                console.log(`ℹ️ Auth Info: ${e.message} (Code: ${errorCode})`);
+            } else {
+                console.error(e);
+            }
 
             if (errorCode === 'NOT_VERIFIED' && (e.userId || errorData.userId)) {
                 showAlert("Cuenta no verificada", "Redirigiendo a verificación...");
