@@ -24,6 +24,28 @@ export default function AuthScreen({ onLoginSuccess }) {
     const [customServerUrl, setCustomServerUrl] = useState('');
     const [showSuperAdmin, setShowSuperAdmin] = useState(false);
 
+    // New Rejection Modal State
+    const [showRejectedModal, setShowRejectedModal] = useState(false);
+
+    const RejectedModal = () => (
+        <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+                <Ionicons name="alert-circle" size={50} color={colors.error} />
+                <Text style={styles.modalTitle}>Solicitud Rechazada</Text>
+                <Text style={styles.modalText}>
+                    Lo sentimos, tu solicitud de afiliación no fue aprobada por nuestros administradores.{'\n\n'}
+                    Si crees que esto es un error, por favor contacta a soporte.
+                </Text>
+                <TouchableOpacity
+                    style={styles.modalBtn}
+                    onPress={() => setShowRejectedModal(false)}
+                >
+                    <Text style={styles.modalBtnText}>Entendido</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+
     const showAlert = (title, msg) => {
         if (Platform.OS === 'web') alert(`${title}: ${msg}`);
         else Alert.alert(title, msg);
@@ -66,6 +88,8 @@ export default function AuthScreen({ onLoginSuccess }) {
                 setVerificationMode(true);
             } else if (errorData.code === 'PENDING_APPROVAL') {
                 showAlert("Pendiente de Aprobación", "Su cuenta ya fue verificada y está siendo revisada por un administrador.");
+            } else if (errorData.code === 'REJECTED') {
+                setShowRejectedModal(true);
             } else {
                 showAlert("Error", e.message || "Ocurrió un error inesperado");
             }
@@ -102,6 +126,7 @@ export default function AuthScreen({ onLoginSuccess }) {
 
     return (
         <View style={styles.container}>
+            {showRejectedModal && <RejectedModal />}
             <View style={styles.card}>
                 <View style={styles.logoContainer}>
                     <Text style={styles.appTitle}>⚡ Pappi<Text style={{ color: colors.primary }}>Admin</Text></Text>
@@ -236,5 +261,54 @@ const styles = StyleSheet.create({
         })
     },
     btnText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
-    link: { marginTop: 10, textAlign: 'center', color: colors.accent, fontWeight: '600' }
+    link: { marginTop: 10, textAlign: 'center', color: colors.accent, fontWeight: '600' },
+
+    // Modal Styles
+    modalOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000
+    },
+    modalContent: {
+        width: '85%',
+        maxWidth: 350,
+        backgroundColor: '#1a1a1a',
+        borderRadius: 20,
+        padding: 30,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: colors.error
+    },
+    modalTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: colors.error,
+        marginTop: 15,
+        marginBottom: 10
+    },
+    modalText: {
+        color: '#ccc',
+        textAlign: 'center',
+        fontSize: 14,
+        lineHeight: 20,
+        marginBottom: 20
+    },
+    modalBtn: {
+        backgroundColor: '#333',
+        paddingHorizontal: 30,
+        paddingVertical: 12,
+        borderRadius: 25,
+        borderWidth: 1,
+        borderColor: '#444'
+    },
+    modalBtnText: {
+        color: 'white',
+        fontWeight: '600'
+    }
 });
