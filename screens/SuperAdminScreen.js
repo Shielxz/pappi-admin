@@ -19,27 +19,12 @@ export default function SuperAdminScreen({ onExit }) {
     useEffect(() => {
         fetchPending();
 
-        // Socket Connection
-        const socket = io(SOCKET_URL);
+        // USER REQUEST: Revert to polling (10s) if socket is causing issues
+        const interval = setInterval(() => {
+            fetchPending(false);
+        }, 10000);
 
-        socket.on('connect', () => {
-            console.log("🟢 Admin conectado a Socket.IO");
-        });
-
-        socket.on('new_user_pending', (data) => {
-            console.log("🔔 Nuevo usuario detectado:", data);
-            fetchPending(false); // Reload list silently
-            if (Platform.OS === 'web') {
-                // Optional: Desktop notification could go here
-                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'); // Simple ding
-                audio.play().catch(e => console.log("Audio play failed (autoplay policy)", e));
-            }
-            showAlert("Nueva Solicitud", `Nuevo usuario verificado: ${data.email || 'Desconocido'}`, 'info');
-        });
-
-        return () => {
-            socket.disconnect();
-        };
+        return () => clearInterval(interval);
     }, []);
 
     const fetchPending = async (showLoading = true) => {

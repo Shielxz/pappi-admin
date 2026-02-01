@@ -1,7 +1,7 @@
 import { API_URL as BASE_URL, DEFAULT_HEADERS } from './config';
 
 export const api = {
-    ver: console.log("✨ API CLIENT v0.5.30 (UI Update) LOADED ✨"),
+    ver: console.log("✨ API CLIENT v0.5.31 (Polling & Alert Codes) LOADED ✨"),
     async register(name, email, password, role = 'admin') {
         // Legacy register
         return this.registerV2(name, email, password, '', 'Restaurante Sin Nombre');
