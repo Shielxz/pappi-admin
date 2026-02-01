@@ -1,3 +1,8 @@
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { colors } from '../theme/colors';
+import { Ionicons } from '@expo/vector-icons';
+import { api } from '../services/api';
 import { CustomAlert } from '../components/CustomAlert';
 
 export default function VerificationScreen({ userId, email, onVerified, onCancel }) {
