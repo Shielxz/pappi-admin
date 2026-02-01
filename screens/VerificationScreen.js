@@ -11,9 +11,6 @@ export default function VerificationScreen({ userId, email, onVerified, onCancel
     const [loading, setLoading] = useState(false);
 
     // Alert State
-    const [alertConfig, setAlertConfig] = useState({ visible: false, title: '', message: '', type: 'info' });
-
-    // Alert State
     const [alertConfig, setAlertConfig] = useState({ visible: false, title: '', message: '', type: 'info', onDismiss: null });
 
     const showAlert = (title, message, type = 'info', onDismiss = null) => {
