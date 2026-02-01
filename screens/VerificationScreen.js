@@ -13,8 +13,18 @@ export default function VerificationScreen({ userId, email, onVerified, onCancel
     // Alert State
     const [alertConfig, setAlertConfig] = useState({ visible: false, title: '', message: '', type: 'info' });
 
-    const showAlert = (title, message, type = 'info') => {
-        setAlertConfig({ visible: true, title, message, type });
+    // Alert State
+    const [alertConfig, setAlertConfig] = useState({ visible: false, title: '', message: '', type: 'info', onDismiss: null });
+
+    const showAlert = (title, message, type = 'info', onDismiss = null) => {
+        setAlertConfig({ visible: true, title, message, type, onDismiss });
+    };
+
+    const handleAlertClose = () => {
+        setAlertConfig(prev => ({ ...prev, visible: false }));
+        if (alertConfig.onDismiss) {
+            alertConfig.onDismiss();
+        }
     };
 
     const handleVerify = async () => {
@@ -23,11 +33,10 @@ export default function VerificationScreen({ userId, email, onVerified, onCancel
         setLoading(true);
         try {
             const res = await api.verify(userId, emailCode, smsCode, email);
-            showAlert("✅ Verificado", res.message, 'success');
-            // Slight delay to let user read success message before unmounting
-            setTimeout(() => {
+            // Pass onVerified as callback to showAlert so it runs ONLY when user clicks OK
+            showAlert("✅ Verificado", res.message, 'success', () => {
                 onVerified();
-            }, 1500);
+            });
         } catch (e) {
             const msg = e.message || "Error de verificación";
             showAlert("Error", msg, "error");
@@ -43,7 +52,7 @@ export default function VerificationScreen({ userId, email, onVerified, onCancel
                 title={alertConfig.title}
                 message={alertConfig.message}
                 type={alertConfig.type}
-                onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
+                onClose={handleAlertClose}
             />
             <View style={styles.card}>
                 <View style={styles.logoContainer}>
