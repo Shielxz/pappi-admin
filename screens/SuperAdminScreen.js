@@ -10,10 +10,14 @@ export default function SuperAdminScreen({ onExit }) {
 
     useEffect(() => {
         fetchPending();
+        const interval = setInterval(() => {
+            fetchPending(false); // Silent update
+        }, 10000); // Poll every 10s
+        return () => clearInterval(interval);
     }, []);
 
-    const fetchPending = async () => {
-        setLoading(true);
+    const fetchPending = async (showLoading = true) => {
+        if (showLoading) setLoading(true);
         try {
             const data = await api.getPendingUsers();
             setUsers(data);
