@@ -215,6 +215,11 @@ export default function AuthScreen({ onLoginSuccess }) {
                         value={password}
                         onChangeText={setPassword}
                         secureTextEntry={!showPassword}
+                        onKeyPress={(e) => {
+                            if (e.nativeEvent.key === 'Enter') {
+                                handleAuth();
+                            }
+                        }}
                     />
                     <TouchableOpacity
                         style={styles.eyeIcon}
