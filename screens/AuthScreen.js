@@ -74,9 +74,7 @@ export default function AuthScreen({ onLoginSuccess }) {
                 const res = await api.login(email, password);
                 console.log("🔐 ADMIN LOGIN ATTEMPT:", res);
                 if (res.user.role === 'admin' || res.user.role === 'superadmin') {
-                    await storeToken(res.token);
-                    await storeUser(res.user);
-                    navigation.replace(res.user.role === 'superadmin' ? 'SuperAdmin' : 'Home');
+                    onLoginSuccess(res.user, res.token);
                 } else {
                     showAlert("Acceso Denegado", "No tienes permisos de administrador", "error");
                 }
