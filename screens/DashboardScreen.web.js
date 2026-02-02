@@ -173,44 +173,39 @@ export default function DashboardScreen({ user, restaurant }) {
                     <Text style={styles.chartTitle}>Estado de Pedidos</Text>
                     <View style={{ height: 300, width: '100%', minHeight: 300, justifyContent: 'center', alignItems: 'center' }}>
                         {Platform.OS === 'web' ? (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={statusData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={75}
-                                        outerRadius={100}
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                        stroke="none"
-                                    >
-                                        {statusData.map((entry, index) => (
-                                            <Cell
-                                                key={`cell-${index}`}
-                                                fill={colors.status[entry.rawStatus]?.text || '#888'}
-                                            />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: 'rgba(30,30,30,0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: 12, backdropFilter: 'blur(10px)' }}
-                                        itemStyle={{ color: '#fff' }}
-                                    />
-                                    <Legend
-                                        verticalAlign="bottom"
-                                        height={36}
-                                        iconType="circle"
-                                        formatter={(value) => <span style={{ color: '#ccc', marginLeft: 5 }}>{value}</span>}
-                                    />
-                                </PieChart>
-                                <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', pointerEvents: 'none' }}>
-                                    <Text style={{ color: '#fff', fontSize: 24, fontWeight: 'bold' }}>
-                                        {summary?.totalOrders || 0}
-                                    </Text>
-                                    <Text style={{ color: '#888', fontSize: 12 }}>Pedidos</Text>
-                                </View>
-
-                            </ResponsiveContainer>
+                            <div style={{ width: '100%', height: '100%' }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={statusData}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={75}
+                                            outerRadius={100}
+                                            paddingAngle={5}
+                                            dataKey="value"
+                                            stroke="none"
+                                        >
+                                            {statusData.map((entry, index) => (
+                                                <Cell
+                                                    key={`cell-${index}`}
+                                                    fill={colors.status[entry.rawStatus]?.text || '#888'}
+                                                />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: 'rgba(30,30,30,0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: 12, backdropFilter: 'blur(10px)' }}
+                                            itemStyle={{ color: '#fff' }}
+                                        />
+                                        <Legend
+                                            verticalAlign="bottom"
+                                            height={36}
+                                            iconType="circle"
+                                            formatter={(value) => <span style={{ color: '#ccc', marginLeft: 5 }}>{value}</span>}
+                                        />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
                         ) : (
                             <Text style={{ color: 'white' }}>Gráfico disponible solo en Web</Text>
                         )}
