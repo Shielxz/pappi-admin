@@ -166,11 +166,17 @@ export default function MenuScreen({ user, restaurant }) {
                 : `${API_URL}/products`;
             const method = editingProduct ? 'PUT' : 'POST';
 
-            await fetch(url, {
+            const res = await fetch(url, {
                 method,
                 headers: DEFAULT_HEADERS,
                 body: formData
             });
+
+            if (!res.ok) {
+                const errData = await res.json();
+                console.error("❌ Error Server Details:", errData);
+                throw new Error(errData.error || `HTTP ${res.status}`);
+            }
 
             Alert.alert("Éxito", editingProduct ? "Producto actualizado" : "Producto agregado");
             resetProductForm();
@@ -260,7 +266,7 @@ export default function MenuScreen({ user, restaurant }) {
                             {product.image_path ? (
                                 <Image
                                     source={{
-                                        uri: product.image_path.startsWith('http')
+                                        uri: product.image_path && product.image_path.startsWith('http')
                                             ? product.image_path
                                             : `${BASE_URL}${product.image_path}`
                                     }}

@@ -25,7 +25,11 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
             setLat(restaurant.lat ? restaurant.lat.toString() : '');
             setLng(restaurant.lng ? restaurant.lng.toString() : '');
             if (restaurant.image_url) {
-                setImagePreview(`${BASE_URL}${restaurant.image_url}`);
+                // Check if it's a full Cloudinary URL or legacy local path
+                const imageUrl = restaurant.image_url.startsWith('http')
+                    ? restaurant.image_url
+                    : `${BASE_URL}${restaurant.image_url}`;
+                setImagePreview(imageUrl);
             }
         }
     }, [restaurant]);
@@ -84,9 +88,12 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
                 const updatedRestaurant = await res.json();
                 onRestaurantUpdate(updatedRestaurant);
             } else {
-                alert('Error al guardar la configuración');
+                const errData = await res.json();
+                console.error("❌ Error Server Details:", errData);
+                alert('Error al guardar: ' + (errData.error || res.status));
             }
         } catch (e) {
+            console.error("❌ Error:", e);
             alert('Error: ' + e.message);
         }
     };
