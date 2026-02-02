@@ -436,6 +436,34 @@ export default function MenuScreen({ user, restaurant }) {
                         </View>
                     </View>
                 </Modal>
+
+                {/* IMAGE CROPPER MODAL - For Products View */}
+                <ImageCropperModal
+                    visible={showCropper}
+                    imageUri={cropperImage}
+                    onCropComplete={handleCropComplete}
+                    onCancel={handleCropCancel}
+                    aspectRatio={1}
+                    title="Recortar Imagen de Producto"
+                    imageInfo={cropperImageInfo}
+                />
+
+                {/* NOTIFICATION TOAST - For Products View */}
+                {notification && (
+                    <View style={[
+                        styles.notification,
+                        notification.type === 'success' && styles.notificationSuccess,
+                        notification.type === 'warning' && styles.notificationWarning,
+                        notification.type === 'error' && styles.notificationError
+                    ]}>
+                        <Ionicons
+                            name={notification.type === 'success' ? 'checkmark-circle' : notification.type === 'warning' ? 'warning' : 'information-circle'}
+                            size={20}
+                            color="#fff"
+                        />
+                        <Text style={styles.notificationText}>{notification.message}</Text>
+                    </View>
+                )}
             </ScrollView>
         );
     }
