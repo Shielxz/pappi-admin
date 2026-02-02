@@ -4,6 +4,8 @@ import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 import { CustomAlert } from '../components/CustomAlert';
+import { API_URL } from '../services/config';
+import { io } from 'socket.io-client';
 
 export default function SuperAdminScreen({ onExit }) {
     const [users, setUsers] = useState([]);
@@ -16,12 +18,34 @@ export default function SuperAdminScreen({ onExit }) {
     useEffect(() => {
         fetchPending();
 
-        // USER REQUEST: Revert to polling (10s) if socket is causing issues
+        // SOCKET.IO: Listen for instant notifications from backend
+        const socket = io(API_URL, {
+            transports: ['websocket', 'polling'],
+            reconnectionAttempts: 3
+        });
+
+        socket.on('connect', () => {
+            console.log('🔌 SuperAdmin Socket CONNECTED');
+        });
+
+        socket.on('new_user_pending', (data) => {
+            console.log('🔔 NEW USER PENDING! Refreshing list...', data);
+            fetchPending(false); // Instant refresh, no loading spinner
+        });
+
+        socket.on('connect_error', (err) => {
+            console.log('⚠️ Socket connection error (using polling fallback):', err.message);
+        });
+
+        // POLLING: Fallback every 10s in case socket fails
         const interval = setInterval(() => {
             fetchPending(false);
         }, 10000);
 
-        return () => clearInterval(interval);
+        return () => {
+            socket.disconnect();
+            clearInterval(interval);
+        };
     }, []);
 
     const fetchPending = async (showLoading = true) => {
