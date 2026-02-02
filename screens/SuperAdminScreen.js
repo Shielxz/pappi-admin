@@ -18,13 +18,11 @@ export default function SuperAdminScreen({ onExit }) {
     useEffect(() => {
         fetchPending();
 
-        // SOCKET.IO: Listen for instant notifications (polling only - websocket fails on free hosting)
+        // SOCKET.IO: Real-time updates (Render Hobby supports WebSockets)
         const socket = io(API_URL, {
-            path: '/socket.io',
-            transports: ['polling'], // Polling only - WebSocket fails on Render free tier
-            reconnectionAttempts: 2,
-            timeout: 10000,
-            upgrade: false // Prevent upgrade attempts that cause console errors
+            transports: ['websocket', 'polling'], // WebSocket first (Render Hobby supports it)
+            reconnectionAttempts: 3,
+            timeout: 20000
         });
 
         socket.on('connect', () => {
