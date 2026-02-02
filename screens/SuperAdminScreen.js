@@ -18,29 +18,27 @@ export default function SuperAdminScreen({ onExit }) {
     useEffect(() => {
         fetchPending();
 
-        // SOCKET.IO: Listen for instant notifications from backend
+        // SOCKET.IO: Listen for instant notifications from backend (best-effort, may fail on free hosting)
         const socket = io(API_URL, {
             path: '/socket.io',
-            transports: ['polling', 'websocket'], // Polling first for better compatibility with proxies
-            reconnectionAttempts: 5,
-            reconnectionDelay: 2000,
-            timeout: 20000
+            transports: ['polling', 'websocket'],
+            reconnectionAttempts: 2,
+            timeout: 10000
         });
 
         socket.on('connect', () => {
-            console.log('🔌 SuperAdmin Socket CONNECTED');
+            console.log('🔌 Realtime updates enabled');
         });
 
         socket.on('new_user_pending', (data) => {
-            console.log('🔔 NEW USER PENDING! Refreshing list...', data);
-            fetchPending(false); // Instant refresh, no loading spinner
+            console.log('🔔 New pending user detected');
+            fetchPending(false);
         });
 
-        socket.on('connect_error', (err) => {
-            console.log('⚠️ Socket connection error (using polling fallback):', err.message);
-        });
+        // Silently ignore socket errors - polling is the reliable fallback
+        socket.on('connect_error', () => { });
 
-        // POLLING: Fallback every 10s in case socket fails
+        // POLLING: Primary mechanism (every 10s)
         const interval = setInterval(() => {
             fetchPending(false);
         }, 10000);

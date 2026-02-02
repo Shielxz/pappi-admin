@@ -102,11 +102,12 @@ export default function AuthScreen({ onLoginSuccess }) {
             const errorData = e.data || {};
             const errorCode = e.code || errorData.code;
 
-            // Only log as error if it's an unexpected crash. Business logic rejections are just info.
-            if (errorCode === 'REJECTED' || errorCode === 'NOT_VERIFIED' || errorCode === 'PENDING_APPROVAL') {
-                console.log(`ℹ️ Auth Info: ${e.message} (Code: ${errorCode})`);
-            } else {
-                console.error(e);
+            // Silently handle expected errors (visual feedback via alert is enough)
+            // Only log truly unexpected crashes for debugging
+            const expectedErrors = ['REJECTED', 'NOT_VERIFIED', 'PENDING_APPROVAL', 'Usuario no encontrado', 'Contraseña incorrecta'];
+            const isExpected = expectedErrors.some(e => errorCode === e || (e.message && e.message.includes(e)));
+            if (!isExpected && !e.message?.includes('no encontrado') && !e.message?.includes('incorrecta')) {
+                console.error('🚨 Unexpected auth error:', e);
             }
 
             if (errorCode === 'NOT_VERIFIED' && (e.userId || errorData.userId)) {
