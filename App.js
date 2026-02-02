@@ -13,6 +13,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import io from 'socket.io-client';
 import { SOCKET_URL, API_URL, DEFAULT_HEADERS } from './services/config';
+import { api } from './services/api';
 
 export default function App() {
     const [user, setUser] = useState(null);
