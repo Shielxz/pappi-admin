@@ -68,7 +68,6 @@ export default function App() {
     };
 
     const loadRestaurant = async (userId) => {
-        // ... (same as before) ...
         console.log(`📡 Intentando cargar restaurante para usuario ID: ${userId}...`);
         try {
             const res = await fetch(`${API_URL}/menu/restaurants`, {
@@ -77,9 +76,15 @@ export default function App() {
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
             const data = await res.json();
+            console.log(`📋 Restaurantes encontrados: ${data.length}`, data.map(r => ({ id: r.id, owner_id: r.owner_id, name: r.name })));
             const myRestaurant = data.find(r => Number(r.owner_id) === Number(userId));
             if (myRestaurant) {
+                console.log(`✅ Restaurante encontrado:`, myRestaurant.name);
                 setRestaurant(myRestaurant);
+            } else {
+                console.log(`⚠️ No se encontró restaurante para usuario ${userId}`);
+                // Create a placeholder so UI renders with a message
+                setRestaurant(null);
             }
         } catch (e) {
             console.error("❌ Error en loadRestaurant:", e);
@@ -236,14 +241,30 @@ export default function App() {
 
 
             <View style={styles.content}>
-                {currentScreen === 'dashboard' && restaurant && <DashboardScreen user={user} restaurant={restaurant} />}
-
-
-                {currentScreen === 'menu' && restaurant && <MenuScreen user={user} restaurant={restaurant} />}
-                {currentScreen === 'orders' && restaurant && <OrdersScreen user={user} restaurant={restaurant} socket={socket} onOrdersUpdate={(count) => {
-                    // This will be called by OrdersScreen if we want to sync total active orders
-                }} />}
-                {currentScreen === 'config' && restaurant && <ConfigScreen user={user} restaurant={restaurant} onRestaurantUpdate={setRestaurant} />}
+                {!restaurant ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
+                        <Ionicons name="restaurant-outline" size={80} color={colors.textMuted} />
+                        <Text style={{ color: colors.textSecondary, fontSize: 20, marginTop: 20, textAlign: 'center' }}>
+                            Cargando tu restaurante...
+                        </Text>
+                        <Text style={{ color: colors.textMuted, fontSize: 14, marginTop: 10, textAlign: 'center' }}>
+                            Si no aparece, es posible que tu cuenta aún no tenga un restaurante vinculado.
+                        </Text>
+                        <TouchableOpacity
+                            style={{ marginTop: 20, padding: 12, backgroundColor: colors.primary, borderRadius: 8 }}
+                            onPress={() => loadRestaurant(user.id)}
+                        >
+                            <Text style={{ color: 'white', fontWeight: 'bold' }}>Reintentar</Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    <>
+                        {currentScreen === 'dashboard' && <DashboardScreen user={user} restaurant={restaurant} />}
+                        {currentScreen === 'menu' && <MenuScreen user={user} restaurant={restaurant} />}
+                        {currentScreen === 'orders' && <OrdersScreen user={user} restaurant={restaurant} socket={socket} onOrdersUpdate={(count) => { }} />}
+                        {currentScreen === 'config' && <ConfigScreen user={user} restaurant={restaurant} onRestaurantUpdate={setRestaurant} />}
+                    </>
+                )}
             </View>
 
             {/* Toast System */}
