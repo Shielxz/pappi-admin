@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
@@ -11,10 +11,11 @@ export default function ImageUploader({
     imagePreview = null,
     onImageSelect,
     onRemoveImage,
-    aspectRatio = 1, // 1 = square, 16/9 = wide
+    aspectRatio = 1,
     helperText = null
 }) {
     const fileInputRef = useRef(null);
+    const [isDragging, setIsDragging] = useState(false);
 
     const handleClick = () => {
         fileInputRef.current?.click();
@@ -23,6 +24,37 @@ export default function ImageUploader({
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
             onImageSelect(e.target.files[0]);
+        }
+    };
+
+    // Drag and drop handlers
+    const handleDragEnter = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            const file = e.dataTransfer.files[0];
+            if (file.type.startsWith('image/')) {
+                onImageSelect(file);
+            }
         }
     };
 
@@ -64,13 +96,43 @@ export default function ImageUploader({
                     </TouchableOpacity>
                 </View>
             ) : (
-                <TouchableOpacity style={styles.dropzone} onPress={handleClick}>
-                    <View style={styles.iconContainer}>
-                        <Ionicons name="cloud-upload-outline" size={40} color={colors.primary} />
-                    </View>
-                    <Text style={styles.dropzoneTitle}>Arrastra una imagen o haz clic</Text>
-                    <Text style={styles.dropzoneSubtitle}>PNG, JPG, WebP hasta {MAX_SIZE_MB}MB</Text>
-                </TouchableOpacity>
+                Platform.OS === 'web' ? (
+                    <div
+                        onClick={handleClick}
+                        onDragEnter={handleDragEnter}
+                        onDragLeave={handleDragLeave}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                        style={{
+                            border: `2px dashed ${isDragging ? colors.primary : 'rgba(255, 255, 255, 0.15)'}`,
+                            borderRadius: 16,
+                            padding: 30,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: isDragging ? 'rgba(255, 140, 0, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        <View style={styles.iconContainer}>
+                            <Ionicons name="cloud-upload-outline" size={40} color={colors.primary} />
+                        </View>
+                        <Text style={styles.dropzoneTitle}>
+                            {isDragging ? '¡Suelta la imagen aquí!' : 'Haz clic para seleccionar'}
+                        </Text>
+                        <Text style={styles.dropzoneSubtitle}>PNG, JPG, WebP hasta {MAX_SIZE_MB}MB</Text>
+                    </div>
+                ) : (
+                    <TouchableOpacity style={styles.dropzone} onPress={handleClick}>
+                        <View style={styles.iconContainer}>
+                            <Ionicons name="cloud-upload-outline" size={40} color={colors.primary} />
+                        </View>
+                        <Text style={styles.dropzoneTitle}>Haz clic para seleccionar</Text>
+                        <Text style={styles.dropzoneSubtitle}>PNG, JPG, WebP hasta {MAX_SIZE_MB}MB</Text>
+                    </TouchableOpacity>
+                )
             )}
 
             {/* Hidden file input */}
@@ -125,17 +187,7 @@ const styles = StyleSheet.create({
         padding: 30,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.03)',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        ...Platform.select({
-            web: {
-                ':hover': {
-                    borderColor: colors.primary,
-                    backgroundColor: 'rgba(255, 140, 0, 0.05)'
-                }
-            }
-        })
+        backgroundColor: 'rgba(255, 255, 255, 0.03)'
     },
     iconContainer: {
         width: 70,
