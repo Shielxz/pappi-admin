@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert,
 import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 import ImageCropperModal from '../components/ImageCropperModal';
+import ImageUploader from '../components/ImageUploader';
 import { getCardImage, checkImageDimensions, formatFileSize, isImageTooLarge } from '../utils/imageOptimization';
 
 
@@ -38,6 +39,7 @@ export default function MenuScreen({ user, restaurant }) {
     const [showCropper, setShowCropper] = useState(false);
     const [cropperImage, setCropperImage] = useState(null);
     const [cropperTarget, setCropperTarget] = useState(null); // 'category' or 'product'
+    const [cropperImageInfo, setCropperImageInfo] = useState(null); // { width, height, sizeKB }
 
     // Notifications
     const [notification, setNotification] = useState(null);
@@ -248,23 +250,32 @@ export default function MenuScreen({ user, restaurant }) {
     const handleImageSelect = async (file, target) => {
         if (!file) return;
 
+        console.log(`📷 [ImageSelect] Processing image for ${target}...`);
+        console.log(`   📁 File: ${file.name}, Size: ${(file.size / 1024).toFixed(1)}KB`);
+
         const previewUrl = URL.createObjectURL(file);
+        const sizeKB = file.size / 1024;
         const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
 
         // Check dimensions
         const { tooLarge, width, height } = await checkImageDimensions(previewUrl, MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION);
+        console.log(`   📐 Dimensions: ${width}x${height}px, Too large: ${tooLarge}`);
 
         // Check file size
         const isFileTooLarge = isImageTooLarge(file, MAX_IMAGE_SIZE_KB);
+        console.log(`   📦 Size check: ${sizeKB.toFixed(1)}KB, Too large: ${isFileTooLarge}`);
 
         if (tooLarge || isFileTooLarge) {
             // Show cropper for large images
+            console.log(`   ✂️ Opening cropper for large image...`);
             showNotification(`📐 Imagen grande (${width}x${height}, ${sizeMB}MB). Recórtala para optimizar.`, 'warning');
             setCropperImage(previewUrl);
             setCropperTarget(target);
+            setCropperImageInfo({ width, height, sizeKB });
             setShowCropper(true);
         } else {
             // Image is good, use directly
+            console.log(`   ✅ Image is good, using directly`);
             showNotification(`✅ Imagen seleccionada (${formatFileSize(file.size)})`, 'success');
             if (target === 'category') {
                 setCategoryImageFile(file);
@@ -303,12 +314,14 @@ export default function MenuScreen({ user, restaurant }) {
         setShowCropper(false);
         setCropperImage(null);
         setCropperTarget(null);
+        setCropperImageInfo(null);
     };
 
     const handleCropCancel = () => {
         setShowCropper(false);
         setCropperImage(null);
         setCropperTarget(null);
+        setCropperImageInfo(null);
         showNotification('Selección de imagen cancelada', 'info');
     };
 
@@ -405,9 +418,13 @@ export default function MenuScreen({ user, restaurant }) {
                                 onChangeText={setProductDesc}
                             />
 
-
-                            <Text style={styles.label}>Imagen del Producto:</Text>
-                            <input type="file" accept="image/*" onChange={handleProductImageChange} style={{ marginBottom: 15 }} />
+                            <ImageUploader
+                                label="Imagen del Producto"
+                                imagePreview={productImagePreview}
+                                onImageSelect={(file) => handleImageSelect(file, 'product')}
+                                onRemoveImage={() => { setProductImageFile(null); setProductImagePreview(null); }}
+                                aspectRatio={1}
+                            />
 
                             <TouchableOpacity style={styles.btn} onPress={saveProduct}>
                                 <Text style={styles.btnText}>Guardar</Text>
@@ -494,9 +511,13 @@ export default function MenuScreen({ user, restaurant }) {
                             onChangeText={setCategoryName}
                         />
 
-
-                        <Text style={styles.label}>Imagen del Menú:</Text>
-                        <input type="file" accept="image/*" onChange={handleCategoryImageChange} style={{ marginBottom: 15 }} />
+                        <ImageUploader
+                            label="Imagen del Menú"
+                            imagePreview={categoryImagePreview}
+                            onImageSelect={(file) => handleImageSelect(file, 'category')}
+                            onRemoveImage={() => { setCategoryImageFile(null); setCategoryImagePreview(null); }}
+                            aspectRatio={16 / 9}
+                        />
 
                         <TouchableOpacity style={styles.btn} onPress={saveCategory}>
                             <Text style={styles.btnText}>Guardar</Text>
@@ -517,6 +538,7 @@ export default function MenuScreen({ user, restaurant }) {
                 onCancel={handleCropCancel}
                 aspectRatio={cropperTarget === 'product' ? 1 : 16 / 9}
                 title={cropperTarget === 'product' ? 'Recortar Imagen de Producto' : 'Recortar Imagen de Menú'}
+                imageInfo={cropperImageInfo}
             />
 
             {/* NOTIFICATION TOAST */}

@@ -47,7 +47,8 @@ export default function ImageCropperModal({
     onCropComplete,
     onCancel,
     aspectRatio = 1,
-    title = "Recortar Imagen"
+    title = "Recortar Imagen",
+    imageInfo = null // { width, height, sizeKB }
 }) {
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
@@ -95,8 +96,26 @@ export default function ImageCropperModal({
                 <View style={styles.container}>
                     {/* Header */}
                     <View style={styles.header}>
+                        <Ionicons name="crop" size={32} color={colors.primary} style={{ marginBottom: 8 }} />
                         <Text style={styles.title}>{title}</Text>
                         <Text style={styles.subtitle}>Arrastra y usa el zoom para ajustar</Text>
+                    </View>
+
+                    {/* Warning Banner */}
+                    <View style={styles.warningBanner}>
+                        <Ionicons name="warning" size={20} color="#ff9800" />
+                        <View style={styles.warningTextContainer}>
+                            <Text style={styles.warningTitle}>
+                                La imagen supera el tamaño máximo permitido
+                            </Text>
+                            <Text style={styles.warningSubtitle}>
+                                {imageInfo && `Dimensiones: ${imageInfo.width}x${imageInfo.height}px`}
+                                {imageInfo?.sizeKB && ` • Peso: ${(imageInfo.sizeKB / 1024).toFixed(1)}MB`}
+                            </Text>
+                            <Text style={styles.warningSubtitle}>
+                                Máximo permitido: 1200x1200px • 2MB
+                            </Text>
+                        </View>
                     </View>
 
                     {/* Cropper Area */}
@@ -244,5 +263,30 @@ const styles = StyleSheet.create({
     },
     buttonDisabled: {
         opacity: 0.6
+    },
+    warningBanner: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: 12,
+        backgroundColor: 'rgba(255, 152, 0, 0.1)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 152, 0, 0.3)',
+        borderRadius: 12,
+        padding: 14,
+        marginBottom: 16
+    },
+    warningTextContainer: {
+        flex: 1
+    },
+    warningTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#ff9800',
+        marginBottom: 4
+    },
+    warningSubtitle: {
+        fontSize: 12,
+        color: '#999',
+        lineHeight: 18
     }
 });

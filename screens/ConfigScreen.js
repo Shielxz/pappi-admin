@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image, Platform } from 'react-native';
 import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
+import ImageUploader from '../components/ImageUploader';
 
 
 import { API_URL as ACTUAL_API_URL, SERVER_URL as BASE_URL, DEFAULT_HEADERS } from '../services/config';
@@ -103,15 +104,16 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
             <Text style={styles.header}>Configuración del Restaurante</Text>
 
             <View style={styles.section}>
-                <Text style={styles.label}>Logo del Restaurante:</Text>
-                {imagePreview && (
-                    <Image source={{ uri: imagePreview }} style={styles.logoPreview} resizeMode="cover" />
-                )}
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    style={{ marginBottom: 20, marginTop: 10 }}
+                <ImageUploader
+                    label="Logo del Restaurante"
+                    imagePreview={imagePreview}
+                    onImageSelect={(file) => {
+                        setImageFile(file);
+                        setImagePreview(URL.createObjectURL(file));
+                    }}
+                    onRemoveImage={() => { setImageFile(null); setImagePreview(null); }}
+                    aspectRatio={1}
+                    helperText="Se recomienda imagen cuadrada para mejor visualización"
                 />
             </View>
 
@@ -193,7 +195,7 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
                 <Text style={styles.infoText}>• La descripción se mostrará en el perfil del restaurante</Text>
                 <Text style={styles.infoText}>• La categoría ayuda a clasificar tu negocio</Text>
             </View>
-        </ScrollView>
+        </ScrollView >
     );
 }
 
