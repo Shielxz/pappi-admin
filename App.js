@@ -82,9 +82,16 @@ export default function App() {
                 console.log(`✅ Restaurante encontrado:`, myRestaurant.name);
                 setRestaurant(myRestaurant);
             } else {
-                console.log(`⚠️ No se encontró restaurante para usuario ${userId}`);
-                // Create a placeholder so UI renders with a message
-                setRestaurant(null);
+                console.log(`⚠️ No se encontró restaurante. Creando uno automáticamente (Self-Healing)...`);
+                try {
+                    // Self-healing: Create it now!
+                    const newRest = await api.ensureRestaurant(userId, "Mi Restaurante");
+                    console.log(`✨ Restaurante creado/recuperado:`, newRest);
+                    setRestaurant(newRest);
+                } catch (err) {
+                    console.error("❌ Falló autocuración de restaurante:", err);
+                    setRestaurant(null); // Fallback UI will show
+                }
             }
         } catch (e) {
             console.error("❌ Error en loadRestaurant:", e);
