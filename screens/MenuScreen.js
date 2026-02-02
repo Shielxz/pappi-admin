@@ -356,7 +356,7 @@ export default function MenuScreen({ user, restaurant }) {
                         {category.image_path ? (
                             <Image
                                 source={{
-                                    uri: category.image_path.startsWith('http')
+                                    uri: category.image_path && category.image_path.startsWith('http')
                                         ? category.image_path
                                         : `${BASE_URL}${category.image_path}`
                                 }}
