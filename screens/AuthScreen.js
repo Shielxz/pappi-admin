@@ -250,6 +250,7 @@ export default function AuthScreen({ onLoginSuccess }) {
                     <TouchableOpacity
                         style={styles.eyeIcon}
                         onPress={() => setShowPassword(!showPassword)}
+                        tabIndex={-1}
                     >
                         <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={colors.textSecondary} />
                     </TouchableOpacity>
@@ -274,6 +275,7 @@ export default function AuthScreen({ onLoginSuccess }) {
                         <TouchableOpacity
                             style={styles.eyeIcon}
                             onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                            tabIndex={-1}
                         >
                             <Ionicons name={showConfirmPassword ? "eye-off-outline" : "eye-outline"} size={20} color={colors.textSecondary} />
                         </TouchableOpacity>

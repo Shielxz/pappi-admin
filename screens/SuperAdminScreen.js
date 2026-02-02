@@ -20,8 +20,11 @@ export default function SuperAdminScreen({ onExit }) {
 
         // SOCKET.IO: Listen for instant notifications from backend
         const socket = io(API_URL, {
-            transports: ['websocket', 'polling'],
-            reconnectionAttempts: 3
+            path: '/socket.io',
+            transports: ['polling', 'websocket'], // Polling first for better compatibility with proxies
+            reconnectionAttempts: 5,
+            reconnectionDelay: 2000,
+            timeout: 20000
         });
 
         socket.on('connect', () => {
