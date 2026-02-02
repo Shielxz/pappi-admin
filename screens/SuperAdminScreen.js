@@ -4,7 +4,7 @@ import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 import { CustomAlert } from '../components/CustomAlert';
-import { API_URL } from '../services/config';
+import { SOCKET_URL } from '../services/config';
 import { io } from 'socket.io-client';
 
 export default function SuperAdminScreen({ onExit }) {
@@ -19,7 +19,7 @@ export default function SuperAdminScreen({ onExit }) {
         fetchPending();
 
         // SOCKET.IO: Real-time updates (Render Hobby supports WebSockets)
-        const socket = io(API_URL, {
+        const socket = io(SOCKET_URL, {
             transports: ['websocket', 'polling'], // WebSocket first (Render Hobby supports it)
             reconnectionAttempts: 3,
             timeout: 20000
