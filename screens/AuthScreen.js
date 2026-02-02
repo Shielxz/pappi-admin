@@ -36,9 +36,11 @@ export default function AuthScreen({ onLoginSuccess }) {
     const showAlert = (title, message, type = 'info') => {
         setAlertConfig({ visible: true, title, message, type });
         if (type === 'success') {
-            // Only auto-close if it's NOT the codes alert
-            if (!message.includes('Email:')) {
-                setTimeout(() => setAlertConfig(prev => ({ ...prev, visible: false })), 2000);
+            // Only auto-close if it's NOT the codes alert (contains 'Email:')
+            // Note: message might be object or string? check carefully.
+            const msgString = typeof message === 'string' ? message : String(message);
+            if (!msgString.includes('Email:')) {
+                setTimeout(() => setAlertConfig(prev => ({ ...prev, visible: false })), 2500);
             }
         }
     };
