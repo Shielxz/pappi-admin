@@ -390,8 +390,8 @@ export default function MenuScreen({ user, restaurant }) {
                 </View>
 
 
-                {/* PRODUCT MODAL */}
-                <Modal visible={showProductModal} animationType="slide" transparent={true}>
+                {/* PRODUCT MODAL - Hide when cropper is open */}
+                <Modal visible={showProductModal && !showCropper} animationType="slide" transparent={true}>
                     <View style={styles.modalOverlay}>
                         <View style={styles.modalContent}>
                             <Text style={styles.modalTitle}>{editingProduct ? 'Editar' : 'Agregar'} Producto</Text>
@@ -526,7 +526,7 @@ export default function MenuScreen({ user, restaurant }) {
 
 
             {/* CATEGORY MODAL */}
-            <Modal visible={showCategoryModal} animationType="slide" transparent={true}>
+            <Modal visible={showCategoryModal && !showCropper} animationType="slide" transparent={true}>
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>{editingCategory ? 'Editar' : 'Crear'} Menú</Text>
