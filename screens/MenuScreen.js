@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Modal, Image, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Modal, Image, Platform, ActivityIndicator } from 'react-native';
 import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
+import ImageCropperModal from '../components/ImageCropperModal';
+import { getCardImage, checkImageDimensions, formatFileSize, isImageTooLarge } from '../utils/imageOptimization';
 
 
 import { API_URL as ACTUAL_API_URL, SERVER_URL as BASE_URL, DEFAULT_HEADERS } from '../services/config';
 
 const API_URL = ACTUAL_API_URL + '/menu';
+const MAX_IMAGE_SIZE_KB = 2000; // 2MB before requiring crop
+const MAX_IMAGE_DIMENSION = 1200; // 1200px
 
 export default function MenuScreen({ user, restaurant }) {
 
@@ -19,6 +23,7 @@ export default function MenuScreen({ user, restaurant }) {
     const [editingCategory, setEditingCategory] = useState(null);
     const [categoryName, setCategoryName] = useState('');
     const [categoryImageFile, setCategoryImageFile] = useState(null);
+    const [categoryImagePreview, setCategoryImagePreview] = useState(null);
 
     // Product form
     const [showProductModal, setShowProductModal] = useState(false);
@@ -27,6 +32,19 @@ export default function MenuScreen({ user, restaurant }) {
     const [productPrice, setProductPrice] = useState('');
     const [productDesc, setProductDesc] = useState('');
     const [productImageFile, setProductImageFile] = useState(null);
+    const [productImagePreview, setProductImagePreview] = useState(null);
+
+    // Image Cropper
+    const [showCropper, setShowCropper] = useState(false);
+    const [cropperImage, setCropperImage] = useState(null);
+    const [cropperTarget, setCropperTarget] = useState(null); // 'category' or 'product'
+
+    // Notifications
+    const [notification, setNotification] = useState(null);
+    const showNotification = (message, type = 'info') => {
+        setNotification({ message, type });
+        setTimeout(() => setNotification(null), 3000);
+    };
 
     useEffect(() => {
         if (restaurant) {
@@ -213,6 +231,7 @@ export default function MenuScreen({ user, restaurant }) {
     const resetCategoryForm = () => {
         setCategoryName('');
         setCategoryImageFile(null);
+        setCategoryImagePreview(null);
         setEditingCategory(null);
     };
 
@@ -221,19 +240,76 @@ export default function MenuScreen({ user, restaurant }) {
         setProductPrice('');
         setProductDesc('');
         setProductImageFile(null);
+        setProductImagePreview(null);
         setEditingProduct(null);
+    };
+
+    // Smart image handler with validation
+    const handleImageSelect = async (file, target) => {
+        if (!file) return;
+
+        const previewUrl = URL.createObjectURL(file);
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+        // Check dimensions
+        const { tooLarge, width, height } = await checkImageDimensions(previewUrl, MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION);
+
+        // Check file size
+        const isFileTooLarge = isImageTooLarge(file, MAX_IMAGE_SIZE_KB);
+
+        if (tooLarge || isFileTooLarge) {
+            // Show cropper for large images
+            showNotification(`📐 Imagen grande (${width}x${height}, ${sizeMB}MB). Recórtala para optimizar.`, 'warning');
+            setCropperImage(previewUrl);
+            setCropperTarget(target);
+            setShowCropper(true);
+        } else {
+            // Image is good, use directly
+            showNotification(`✅ Imagen seleccionada (${formatFileSize(file.size)})`, 'success');
+            if (target === 'category') {
+                setCategoryImageFile(file);
+                setCategoryImagePreview(previewUrl);
+            } else {
+                setProductImageFile(file);
+                setProductImagePreview(previewUrl);
+            }
+        }
     };
 
     const handleCategoryImageChange = (e) => {
         if (e.target.files && e.target.files[0]) {
-            setCategoryImageFile(e.target.files[0]);
+            handleImageSelect(e.target.files[0], 'category');
         }
     };
 
     const handleProductImageChange = (e) => {
         if (e.target.files && e.target.files[0]) {
-            setProductImageFile(e.target.files[0]);
+            handleImageSelect(e.target.files[0], 'product');
         }
+    };
+
+    // Handle cropped image
+    const handleCropComplete = (croppedFile, croppedPreview) => {
+        showNotification(`✅ Imagen recortada (${formatFileSize(croppedFile.size)})`, 'success');
+
+        if (cropperTarget === 'category') {
+            setCategoryImageFile(croppedFile);
+            setCategoryImagePreview(croppedPreview);
+        } else {
+            setProductImageFile(croppedFile);
+            setProductImagePreview(croppedPreview);
+        }
+
+        setShowCropper(false);
+        setCropperImage(null);
+        setCropperTarget(null);
+    };
+
+    const handleCropCancel = () => {
+        setShowCropper(false);
+        setCropperImage(null);
+        setCropperTarget(null);
+        showNotification('Selección de imagen cancelada', 'info');
     };
 
     if (!restaurant) {
@@ -432,6 +508,33 @@ export default function MenuScreen({ user, restaurant }) {
                     </View>
                 </View>
             </Modal>
+
+            {/* IMAGE CROPPER MODAL */}
+            <ImageCropperModal
+                visible={showCropper}
+                imageUri={cropperImage}
+                onCropComplete={handleCropComplete}
+                onCancel={handleCropCancel}
+                aspectRatio={cropperTarget === 'product' ? 1 : 16 / 9}
+                title={cropperTarget === 'product' ? 'Recortar Imagen de Producto' : 'Recortar Imagen de Menú'}
+            />
+
+            {/* NOTIFICATION TOAST */}
+            {notification && (
+                <View style={[
+                    styles.notification,
+                    notification.type === 'success' && styles.notificationSuccess,
+                    notification.type === 'warning' && styles.notificationWarning,
+                    notification.type === 'error' && styles.notificationError
+                ]}>
+                    <Ionicons
+                        name={notification.type === 'success' ? 'checkmark-circle' : notification.type === 'warning' ? 'warning' : 'information-circle'}
+                        size={20}
+                        color="#fff"
+                    />
+                    <Text style={styles.notificationText}>{notification.message}</Text>
+                </View>
+            )}
         </ScrollView>
     );
 }
@@ -531,6 +634,62 @@ const styles = StyleSheet.create({
             web: { boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }
         })
     },
-    modalTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: colors.textPrimary }
+    modalTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: colors.textPrimary },
+
+    // Notification Toast
+    notification: {
+        position: 'absolute',
+        bottom: 30,
+        left: 30,
+        right: 30,
+        backgroundColor: 'rgba(50, 50, 50, 0.95)',
+        padding: 16,
+        borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        ...Platform.select({
+            web: {
+                boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+                backdropFilter: 'blur(10px)'
+            }
+        })
+    },
+    notificationSuccess: {
+        backgroundColor: 'rgba(0, 200, 83, 0.9)'
+    },
+    notificationWarning: {
+        backgroundColor: 'rgba(255, 152, 0, 0.9)'
+    },
+    notificationError: {
+        backgroundColor: 'rgba(244, 67, 54, 0.9)'
+    },
+    notificationText: {
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: '500',
+        flex: 1
+    },
+
+    // Image Preview
+    imagePreview: {
+        width: '100%',
+        height: 150,
+        borderRadius: 12,
+        marginBottom: 15,
+        backgroundColor: '#333'
+    },
+    imagePreviewContainer: {
+        position: 'relative',
+        marginBottom: 15
+    },
+    removeImageBtn: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        borderRadius: 15,
+        padding: 5
+    }
 });
 
