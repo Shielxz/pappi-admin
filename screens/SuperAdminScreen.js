@@ -44,14 +44,8 @@ export default function SuperAdminScreen({ onExit }) {
             console.log('⚠️ Socket error:', err.message);
         });
 
-        // POLLING: Fallback every 10s
-        const interval = setInterval(() => {
-            fetchPending(false);
-        }, 10000);
-
         return () => {
             socket.disconnect();
-            clearInterval(interval);
         };
     }, []);
 
