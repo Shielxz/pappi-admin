@@ -53,6 +53,8 @@ export default function MenuScreen({ user, restaurant }) {
                 headers: DEFAULT_HEADERS
             });
             const data = await res.json();
+            console.log("🍕 Products loaded:", data);
+            data.forEach(p => console.log(`  - ${p.name}: image_url = ${p.image_url}`));
             setProducts(data);
         } catch (e) {
             console.error(e);
