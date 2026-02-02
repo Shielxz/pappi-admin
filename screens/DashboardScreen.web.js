@@ -118,49 +118,47 @@ export default function DashboardScreen({ user, restaurant }) {
                     <Text style={styles.chartTitle}>Tendencia de Ventas (30 Días)</Text>
                     <View style={{ height: 300, width: '100%', minHeight: 300 }}>
                         {Platform.OS === 'web' ? (
-                            <div style={{ width: '100%', height: '100%' }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={salesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                        <defs>
-                                            <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor={colors.primary} stopOpacity={0.5} />
-                                                <stop offset="95%" stopColor={colors.primary} stopOpacity={0} />
-                                            </linearGradient>
-                                            <filter id="glow" height="130%">
-                                                <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="coloredBlur" />
-                                                <feMerge>
-                                                    <feMergeNode in="coloredBlur" />
-                                                    <feMergeNode in="SourceGraphic" />
-                                                </feMerge>
-                                            </filter>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} strokeOpacity={0.3} />
-                                        <XAxis
-                                            dataKey="date"
-                                            stroke="#666"
-                                            tick={{ fill: '#888', fontSize: 12 }}
-                                            tickLine={false}
-                                            axisLine={false}
-                                            dy={10}
-                                        />
-                                        <YAxis
-                                            stroke="#666"
-                                            tick={{ fill: '#888', fontSize: 12 }}
-                                            tickLine={false}
-                                            axisLine={false}
-                                        />
-                                        <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }} />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="sales"
-                                            stroke={colors.primary}
-                                            strokeWidth={3}
-                                            fillOpacity={1}
-                                            fill="url(#colorSales)"
-                                            filter="url(#glow)"
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
+                            <div style={{ width: '100%', height: 280, overflow: 'hidden' }}>
+                                <AreaChart width={600} height={280} data={salesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor={colors.primary} stopOpacity={0.5} />
+                                            <stop offset="95%" stopColor={colors.primary} stopOpacity={0} />
+                                        </linearGradient>
+                                        <filter id="glow" height="130%">
+                                            <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="coloredBlur" />
+                                            <feMerge>
+                                                <feMergeNode in="coloredBlur" />
+                                                <feMergeNode in="SourceGraphic" />
+                                            </feMerge>
+                                        </filter>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} strokeOpacity={0.3} />
+                                    <XAxis
+                                        dataKey="date"
+                                        stroke="#666"
+                                        tick={{ fill: '#888', fontSize: 12 }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        dy={10}
+                                    />
+                                    <YAxis
+                                        stroke="#666"
+                                        tick={{ fill: '#888', fontSize: 12 }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
+                                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }} />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="sales"
+                                        stroke={colors.primary}
+                                        strokeWidth={3}
+                                        fillOpacity={1}
+                                        fill="url(#colorSales)"
+                                        filter="url(#glow)"
+                                    />
+                                </AreaChart>
                             </div>
                         ) : (
                             <Text style={{ color: 'white' }}>Gráfico disponible solo en Web</Text>
@@ -173,38 +171,36 @@ export default function DashboardScreen({ user, restaurant }) {
                     <Text style={styles.chartTitle}>Estado de Pedidos</Text>
                     <View style={{ height: 300, width: '100%', minHeight: 300, justifyContent: 'center', alignItems: 'center' }}>
                         {Platform.OS === 'web' ? (
-                            <div style={{ width: '100%', height: '100%' }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={statusData}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={75}
-                                            outerRadius={100}
-                                            paddingAngle={5}
-                                            dataKey="value"
-                                            stroke="none"
-                                        >
-                                            {statusData.map((entry, index) => (
-                                                <Cell
-                                                    key={`cell-${index}`}
-                                                    fill={colors.status[entry.rawStatus]?.text || '#888'}
-                                                />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip
-                                            contentStyle={{ backgroundColor: 'rgba(30,30,30,0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: 12, backdropFilter: 'blur(10px)' }}
-                                            itemStyle={{ color: '#fff' }}
-                                        />
-                                        <Legend
-                                            verticalAlign="bottom"
-                                            height={36}
-                                            iconType="circle"
-                                            formatter={(value) => <span style={{ color: '#ccc', marginLeft: 5 }}>{value}</span>}
-                                        />
-                                    </PieChart>
-                                </ResponsiveContainer>
+                            <div style={{ width: 300, height: 280, overflow: 'hidden' }}>
+                                <PieChart width={300} height={280}>
+                                    <Pie
+                                        data={statusData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={75}
+                                        outerRadius={100}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                        stroke="none"
+                                    >
+                                        {statusData.map((entry, index) => (
+                                            <Cell
+                                                key={`cell-${index}`}
+                                                fill={colors.status[entry.rawStatus]?.text || '#888'}
+                                            />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: 'rgba(30,30,30,0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: 12, backdropFilter: 'blur(10px)' }}
+                                        itemStyle={{ color: '#fff' }}
+                                    />
+                                    <Legend
+                                        verticalAlign="bottom"
+                                        height={36}
+                                        iconType="circle"
+                                        formatter={(value) => <span style={{ color: '#ccc', marginLeft: 5 }}>{value}</span>}
+                                    />
+                                </PieChart>
                             </div>
                         ) : (
                             <Text style={{ color: 'white' }}>Gráfico disponible solo en Web</Text>
