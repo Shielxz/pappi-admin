@@ -105,6 +105,12 @@ export default function MenuScreen({ user, restaurant }) {
                 body: formData
             });
 
+            if (!res.ok) {
+                const errData = await res.json();
+                console.error("❌ Error Server Details:", errData);
+                throw new Error(errData.error || `HTTP ${res.status}`);
+            }
+
             Alert.alert("Éxito", editingCategory ? "Categoría actualizada" : "Categoría creada");
             resetCategoryForm();
             setShowCategoryModal(false);
