@@ -30,6 +30,9 @@ export default function AuthScreen({ onLoginSuccess }) {
     // New Rejection Modal State
     const [showRejectedModal, setShowRejectedModal] = useState(false);
 
+    // NEW: Codes Modal State (persists until user dismisses)
+    const [codesModal, setCodesModal] = useState({ visible: false, emailCode: '', smsCode: '' });
+
     // Alert State
     const [alertConfig, setAlertConfig] = useState({ visible: false, title: '', message: '', type: 'info' });
 
@@ -85,19 +88,15 @@ export default function AuthScreen({ onLoginSuccess }) {
                 const res = await api.registerV2(name, email, password, phone, name); // Assuming 'name' is also restaurantName
                 console.log("CODES:", res);
 
-                // USER REQUEST: Show codes in alert since email/sms service isn't active yet
-                if (res.emailCode || res.smsCode) {
-                    showAlert("Códigos de Prueba", `Email: ${res.emailCode}\nSMS: ${res.smsCode}`, "success");
-                }
-
+                // USER REQUEST: Show codes in a PERSISTENT modal (not auto-closing)
                 setPendingUserId(res.userId);
-                // Delay verification mode specific to this flow so they can read the codes?
-                // User said: "metelos esos si en un alert comun y corriente"
-                // The auto-close is 2s (success type). Maybe too fast for codes?
-                // Let's make it a distinct alert or rely on the user to remember.
-                // Better: Pass codes to VerificationScreen as initial values? No, that defeats the purpose.
-                // Just delay transition slightly longer.
-                setTimeout(() => setVerificationMode(true), 4000); // 4s to read codes
+                if (res.emailCode || res.smsCode) {
+                    // Show codes modal - user MUST dismiss it to proceed
+                    setCodesModal({ visible: true, emailCode: res.emailCode, smsCode: res.smsCode });
+                } else {
+                    // No codes? Go directly to verification
+                    setVerificationMode(true);
+                }
             }
         } catch (e) {
             const errorData = e.data || {};
@@ -163,6 +162,30 @@ export default function AuthScreen({ onLoginSuccess }) {
                 onClose={() => setAlertConfig({ ...alertConfig, visible: false })}
             />
             {showRejectedModal && <RejectedModal />}
+
+            {/* CODES MODAL - Stays open until user dismisses */}
+            {codesModal.visible && (
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Ionicons name="key" size={60} color={colors.success} />
+                        <Text style={styles.modalTitle}>Códigos de Verificación</Text>
+                        <Text style={styles.modalText}>
+                            Guarda estos códigos para verificar tu cuenta:{'\n\n'}
+                            📧 Email: <Text style={{ fontWeight: 'bold', color: colors.primary }}>{codesModal.emailCode}</Text>{'\n'}
+                            📱 SMS: <Text style={{ fontWeight: 'bold', color: colors.primary }}>{codesModal.smsCode}</Text>
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.modalBtn}
+                            onPress={() => {
+                                setCodesModal({ visible: false, emailCode: '', smsCode: '' });
+                                setVerificationMode(true); // ONLY transition after user dismisses
+                            }}
+                        >
+                            <Text style={styles.modalBtnText}>Continuar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
             <View style={styles.card}>
                 <View style={styles.logoContainer}>
                     <Text style={styles.appTitle}>⚡ Pappi<Text style={{ color: colors.primary }}>Admin</Text></Text>
