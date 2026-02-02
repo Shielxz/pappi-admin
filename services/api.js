@@ -1,7 +1,7 @@
 import { API_URL as BASE_URL, DEFAULT_HEADERS } from './config';
 
 export const api = {
-    ver: console.log("✨ API CLIENT v0.5.48 (Self-Healing Fix) LOADED ✨"),
+    ver: console.log("✨ API CLIENT v0.5.49 (Self-Healing Final) LOADED ✨"),
     async register(name, email, password, role = 'admin') {
         // Legacy register
         return this.registerV2(name, email, password, '', 'Restaurante Sin Nombre');
@@ -38,6 +38,22 @@ export const api = {
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Verification failed');
+            return data;
+        } catch (e) {
+            throw e;
+        }
+    },
+
+    // Self-healing: Create restaurant if missing
+    async ensureRestaurant(userId, name) {
+        try {
+            const response = await fetch(`${BASE_URL}/auth/ensure-restaurant`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...DEFAULT_HEADERS },
+                body: JSON.stringify({ userId, name })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Failed to ensure restaurant');
             return data;
         } catch (e) {
             throw e;
