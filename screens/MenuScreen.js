@@ -99,7 +99,7 @@ export default function MenuScreen({ user, restaurant }) {
                 : `${API_URL}/categories`;
             const method = editingCategory ? 'PUT' : 'POST';
 
-            await fetch(url, {
+            const res = await fetch(url, {
                 method,
                 headers: DEFAULT_HEADERS,
                 body: formData
