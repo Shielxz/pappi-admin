@@ -26,18 +26,25 @@ export default function SuperAdminScreen({ onExit }) {
         });
 
         socket.on('connect', () => {
-            console.log('🔌 Realtime updates enabled');
+            const transport = socket.io.engine.transport.name;
+            console.log(`🔌 Socket CONNECTED via ${transport.toUpperCase()}`);
+        });
+
+        socket.io.engine.on('upgrade', () => {
+            console.log('⬆️ Socket upgraded to WEBSOCKET');
         });
 
         socket.on('new_user_pending', (data) => {
-            console.log('🔔 New pending user detected');
+            console.log('🔔 REALTIME EVENT: New pending user!', data);
             fetchPending(false);
         });
 
-        // Silently ignore socket errors - polling is the reliable fallback
-        socket.on('connect_error', () => { });
+        // Show socket errors for debugging
+        socket.on('connect_error', (err) => {
+            console.log('⚠️ Socket error:', err.message);
+        });
 
-        // POLLING: Primary mechanism (every 10s)
+        // POLLING: Fallback every 10s
         const interval = setInterval(() => {
             fetchPending(false);
         }, 10000);
