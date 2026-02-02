@@ -23,18 +23,23 @@
             "package": "com.shielxz.pappi_admin"
         },
         "web": {
-            "favicon": "./assets/favicon.png",
+            "favicon": "./public/favicon.png",
             "bundler": "metro",
             "name": "Pappi Admin",
-            "shortName": "Pappi",
-            "description": "Panel de Administración para Pappi Delivery",
-            "backgroundColor": "#000000",
-            "themeColor": "#FF4500",
+            "shortName": "PappiAdmin",
+            "description": "Panel de Administración para Pappi Delivery - Gestiona tu restaurante y pedidos en tiempo real.",
+            "backgroundColor": "#0d0d0d",
+            "themeColor": "#FF8C00",
             "meta": {
-                "og:title": "Pappi Admin Panel",
-                "og:description": "Gestiona tu restaurante y pedidos en tiempo real.",
-                "og:image": "./assets/icon.png",
-                "twitter:card": "summary_large_image"
+                "og:title": "Pappi Admin - Panel de Restaurantes",
+                "og:description": "Gestiona tu restaurante, menús y pedidos en tiempo real con Pappi Delivery.",
+                "og:image": "https://pappi-admin-three.vercel.app/og-image.png",
+                "og:url": "https://pappi-admin-three.vercel.app",
+                "og:type": "website",
+                "twitter:card": "summary_large_image",
+                "twitter:title": "Pappi Admin",
+                "twitter:description": "Gestiona tu restaurante con Pappi Delivery",
+                "twitter:image": "https://pappi-admin-three.vercel.app/og-image.png"
             }
         },
         "extra": {

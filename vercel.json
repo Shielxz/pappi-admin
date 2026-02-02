@@ -1,6 +1,14 @@
 {
     "rewrites": [
         {
+            "source": "/og-image.png",
+            "destination": "/public/og-image.png"
+        },
+        {
+            "source": "/favicon.png",
+            "destination": "/public/favicon.png"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }
