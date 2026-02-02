@@ -263,12 +263,12 @@ export default function MenuScreen({ user, restaurant }) {
                 <View style={styles.productsGrid}>
                     {products.map(product => (
                         <View key={product.id} style={styles.productCard}>
-                            {product.image_path ? (
+                            {product.image_url ? (
                                 <Image
                                     source={{
-                                        uri: product.image_path && product.image_path.startsWith('http')
-                                            ? product.image_path
-                                            : `${BASE_URL}${product.image_path}`
+                                        uri: product.image_url && product.image_url.startsWith('http')
+                                            ? product.image_url
+                                            : `${BASE_URL}${product.image_url}`
                                     }}
                                     style={styles.productImage}
                                 />
