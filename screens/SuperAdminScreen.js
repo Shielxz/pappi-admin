@@ -18,12 +18,13 @@ export default function SuperAdminScreen({ onExit }) {
     useEffect(() => {
         fetchPending();
 
-        // SOCKET.IO: Listen for instant notifications from backend (best-effort, may fail on free hosting)
+        // SOCKET.IO: Listen for instant notifications (polling only - websocket fails on free hosting)
         const socket = io(API_URL, {
             path: '/socket.io',
-            transports: ['polling', 'websocket'],
+            transports: ['polling'], // Polling only - WebSocket fails on Render free tier
             reconnectionAttempts: 2,
-            timeout: 10000
+            timeout: 10000,
+            upgrade: false // Prevent upgrade attempts that cause console errors
         });
 
         socket.on('connect', () => {
