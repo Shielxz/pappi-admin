@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     logoSection: {
-        width: 200,
+        width: 240,
         backgroundColor: colors.bgCard,
         borderRadius: 20,
         padding: 10,

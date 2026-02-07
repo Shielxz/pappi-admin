@@ -59,7 +59,7 @@ export default function ImageUploader({
         }
     };
 
-    const aspectHeight = compact ? 150 : (aspectRatio === 1 ? 160 : 120);
+    const aspectHeight = compact ? 180 : (aspectRatio === 1 ? 160 : 120);
 
     return (
         <View style={styles.container}>
