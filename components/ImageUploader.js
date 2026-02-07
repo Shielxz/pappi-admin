@@ -159,7 +159,8 @@ export default function ImageUploader({
 
 const styles = StyleSheet.create({
     container: {
-        marginBottom: 0
+        marginBottom: 0,
+        width: '100%'
     },
     label: {
         fontSize: 14,
@@ -215,7 +216,8 @@ const styles = StyleSheet.create({
         position: 'relative',
         borderRadius: 16,
         overflow: 'hidden',
-        backgroundColor: '#1a1a1a'
+        backgroundColor: '#1a1a1a',
+        width: '100%'
     },
     preview: {
         width: '100%',
