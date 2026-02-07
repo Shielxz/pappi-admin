@@ -187,7 +187,7 @@ export default function App() {
         <View style={styles.container}>
             <View style={styles.sidebar}>
                 <View style={styles.branding}>
-                    <Text style={styles.logo}>⚡ Pappi<Text style={{ color: colors.primary }}>Admin</Text></Text>
+                    <Text style={styles.logo}>Pappi<Text style={{ color: colors.primary }}>Negocio</Text></Text>
                     <Text style={styles.welcomeText}>Hola, {user.name}</Text>
                 </View>
 

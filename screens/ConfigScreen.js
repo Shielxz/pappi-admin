@@ -200,62 +200,64 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 30 },
-    header: { fontSize: 32, fontWeight: 'bold', marginBottom: 20, color: colors.textPrimary },
+    container: { flex: 1, padding: 40, maxWidth: 1000, alignSelf: 'center', width: '100%' },
+    header: { fontSize: 36, fontWeight: '800', marginBottom: 30, color: colors.textPrimary, letterSpacing: -0.5 },
     section: {
         backgroundColor: colors.bgCard,
-        padding: 20,
-        borderRadius: 16,
-        marginBottom: 20,
+        padding: 24,
+        borderRadius: 20,
+        marginBottom: 24,
         borderWidth: 1,
         borderColor: colors.glassBorder,
         ...Platform.select({
-            web: { boxShadow: '0 4px 20px rgba(0,0,0,0.2)', backdropFilter: 'blur(10px)' },
+            web: { boxShadow: '0 8px 32px rgba(0,0,0,0.2)', backdropFilter: 'blur(12px)' },
             default: { elevation: 2 }
         })
     },
-    label: { fontSize: 16, fontWeight: '600', marginBottom: 12, color: colors.textSecondary },
+    label: { fontSize: 14, fontWeight: '600', marginBottom: 12, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
     input: {
         borderWidth: 1,
         borderColor: '#333',
-        padding: 15,
-        borderRadius: 8,
+        padding: 18,
+        borderRadius: 12,
         fontSize: 16,
-        backgroundColor: '#222',
-        color: 'white'
+        backgroundColor: '#151515',
+        color: 'white',
+        fontWeight: '500'
     },
     textArea: { minHeight: 120, textAlignVertical: 'top' },
     logoPreview: {
-        width: '100%',
-        maxWidth: 300,
+        width: 200,
         height: 200,
-        borderRadius: 12,
+        borderRadius: 20,
         marginBottom: 15,
-        alignSelf: 'center'
+        alignSelf: 'center',
+        borderWidth: 1,
+        borderColor: '#333'
     },
     saveBtn: {
         backgroundColor: colors.secondary,
-        padding: 18,
-        borderRadius: 12,
+        padding: 20,
+        borderRadius: 16,
         alignItems: 'center',
         marginTop: 10,
-        marginBottom: 30,
+        marginBottom: 50,
         flexDirection: 'row',
         justifyContent: 'center',
         ...Platform.select({
-            web: { boxShadow: '0 4px 15px rgba(0, 230, 118, 0.3)' }
+            web: { boxShadow: '0 8px 20px rgba(0, 230, 118, 0.25)', transition: 'all 0.2s' }
         })
     },
     saveBtnText: { color: '#000', fontSize: 18, fontWeight: 'bold' },
     infoSection: {
-        backgroundColor: 'rgba(41, 121, 255, 0.1)',
-        padding: 20,
+        backgroundColor: 'rgba(41, 121, 255, 0.08)',
+        padding: 24,
         borderRadius: 16,
         marginBottom: 30,
         borderWidth: 1,
-        borderColor: 'rgba(41, 121, 255, 0.2)'
+        borderColor: 'rgba(41, 121, 255, 0.15)'
     },
-    infoTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: colors.accent },
-    infoText: { fontSize: 14, color: colors.textSecondary, marginBottom: 8 }
+    infoTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 12, color: colors.accent },
+    infoText: { fontSize: 14, color: colors.textSecondary, marginBottom: 8, lineHeight: 22 }
 });
 

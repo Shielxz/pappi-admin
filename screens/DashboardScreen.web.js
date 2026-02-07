@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Platform, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Platform, Dimensions, TouchableOpacity } from 'react-native';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { colors } from '../theme/colors';
 import { API_URL, DEFAULT_HEADERS } from '../services/config';
@@ -20,7 +20,6 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
-
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function DashboardScreen({ user, restaurant }) {
@@ -28,18 +27,19 @@ export default function DashboardScreen({ user, restaurant }) {
     const [salesData, setSalesData] = useState([]);
     const [statusData, setStatusData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [timeRange, setTimeRange] = useState('today'); // 'today' | 'all'
 
     useEffect(() => {
         fetchDashboardData();
-    }, [restaurant.id]);
+    }, [restaurant.id, timeRange]);
 
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
             const [summaryRes, salesRes, statusRes] = await Promise.all([
-                fetch(`${API_URL}/analytics/summary/${restaurant.id}`, { headers: DEFAULT_HEADERS }),
-                fetch(`${API_URL}/analytics/sales-chart/${restaurant.id}`, { headers: DEFAULT_HEADERS }),
-                fetch(`${API_URL}/analytics/status-distribution/${restaurant.id}`, { headers: DEFAULT_HEADERS })
+                fetch(`${API_URL}/analytics/summary/${restaurant.id}?range=${timeRange}`, { headers: DEFAULT_HEADERS }),
+                fetch(`${API_URL}/analytics/sales-chart/${restaurant.id}?range=${timeRange}`, { headers: DEFAULT_HEADERS }),
+                fetch(`${API_URL}/analytics/status-distribution/${restaurant.id}?range=${timeRange}`, { headers: DEFAULT_HEADERS })
             ]);
 
             const summaryJson = await summaryRes.json();
@@ -68,7 +68,7 @@ export default function DashboardScreen({ user, restaurant }) {
     const StatCard = ({ title, value, subtext, icon, color }) => (
         <View style={styles.statCard}>
             <View style={[styles.iconContainer, { backgroundColor: `${color}20` }]}>
-                <Ionicons name={icon} size={24} color={color} />
+                <Ionicons name={icon} size={28} color={color} />
             </View>
             <View>
                 <Text style={styles.statTitle}>{title}</Text>
@@ -78,10 +78,45 @@ export default function DashboardScreen({ user, restaurant }) {
         </View>
     );
 
+    const CustomLegend = ({ payload }) => {
+        return (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 10 }}>
+                {payload.map((entry, index) => (
+                    <View key={`legend-${index}`} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15, marginBottom: 5 }}>
+                        <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: entry.color, marginRight: 5 }} />
+                        <Text style={{ color: '#ccc', fontSize: 12 }}>
+                            {entry.value} <Text style={{ fontWeight: 'bold', color: 'white' }}>({entry.payload.value})</Text>
+                        </Text>
+                    </View>
+                ))}
+            </View>
+        );
+    };
+
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            <Text style={styles.pageTitle}>Dashboard General</Text>
-            <Text style={styles.pageSubtitle}>Resumen de actividad en tiempo real</Text>
+            <View style={styles.headerRow}>
+                <View>
+                    <Text style={styles.pageTitle}>Dashboard General</Text>
+                    <Text style={styles.pageSubtitle}>Resumen de actividad en tiempo real</Text>
+                </View>
+
+                {/* DATE FILTERS */}
+                <View style={styles.filterContainer}>
+                    <TouchableOpacity
+                        style={[styles.filterBtn, timeRange === 'today' && styles.filterBtnActive]}
+                        onPress={() => setTimeRange('today')}
+                    >
+                        <Text style={[styles.filterText, timeRange === 'today' && styles.filterTextActive]}>Hoy</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.filterBtn, timeRange === 'all' && styles.filterBtnActive]}
+                        onPress={() => setTimeRange('all')}
+                    >
+                        <Text style={[styles.filterText, timeRange === 'all' && styles.filterTextActive]}>Histórico</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
 
             {/* TOP METRICS ROW */}
             <View style={styles.statsGrid}>
@@ -92,7 +127,7 @@ export default function DashboardScreen({ user, restaurant }) {
                     color="#00E676"
                 />
                 <StatCard
-                    title="Pedidos Totales"
+                    title="Pedidos"
                     value={summary?.totalOrders || 0}
                     icon="receipt-outline"
                     color="#2979FF"
@@ -116,110 +151,104 @@ export default function DashboardScreen({ user, restaurant }) {
                 {/* SALES AREA CHART */}
                 <View style={[styles.chartCard, { flex: 2 }]}>
                     <Text style={styles.chartTitle}>Tendencia de Ventas (30 Días)</Text>
-                    <View style={{ height: 300, width: '100%', minHeight: 300 }}>
+                    <View style={{ height: 350, width: '100%' }}>
                         {Platform.OS === 'web' ? (
                             salesData && salesData.length > 0 ? (
-                                <div style={{ width: '100%', height: 280, overflow: 'hidden' }}>
-                                    <AreaChart width={600} height={280} data={salesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                        <defs>
-                                            <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor={colors.primary} stopOpacity={0.5} />
-                                                <stop offset="95%" stopColor={colors.primary} stopOpacity={0} />
-                                            </linearGradient>
-                                            <filter id="glow" height="130%">
-                                                <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="coloredBlur" />
-                                                <feMerge>
-                                                    <feMergeNode in="coloredBlur" />
-                                                    <feMergeNode in="SourceGraphic" />
-                                                </feMerge>
-                                            </filter>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} strokeOpacity={0.3} />
-                                        <XAxis
-                                            dataKey="date"
-                                            stroke="#666"
-                                            tick={{ fill: '#888', fontSize: 12 }}
-                                            tickLine={false}
-                                            axisLine={false}
-                                            dy={10}
-                                        />
-                                        <YAxis
-                                            stroke="#666"
-                                            tick={{ fill: '#888', fontSize: 12 }}
-                                            tickLine={false}
-                                            axisLine={false}
-                                        />
-                                        <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }} />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="sales"
-                                            stroke={colors.primary}
-                                            strokeWidth={3}
-                                            fillOpacity={1}
-                                            fill="url(#colorSales)"
-                                            filter="url(#glow)"
-                                        />
-                                    </AreaChart>
+                                <div style={{ width: '100%', height: 320, overflow: 'hidden' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={salesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor={colors.primary} stopOpacity={0.4} />
+                                                    <stop offset="95%" stopColor={colors.primary} stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                                            <XAxis
+                                                dataKey="date"
+                                                stroke="#666"
+                                                tick={{ fill: '#888', fontSize: 11 }}
+                                                tickLine={false}
+                                                axisLine={false}
+                                                dy={10}
+                                                tickFormatter={(str) => {
+                                                    const date = new Date(str);
+                                                    return `${date.getDate()}/${date.getMonth() + 1}`;
+                                                }}
+                                            />
+                                            <YAxis
+                                                stroke="#666"
+                                                tick={{ fill: '#888', fontSize: 11 }}
+                                                tickLine={false}
+                                                axisLine={false}
+                                            />
+                                            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }} />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="sales"
+                                                stroke={colors.primary}
+                                                strokeWidth={3}
+                                                fillOpacity={1}
+                                                fill="url(#colorSales)"
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
                                 </div>
                             ) : (
                                 <View style={styles.emptyChart}>
-                                    <Ionicons name="trending-up-outline" size={48} color="#444" />
-                                    <Text style={styles.emptyChartText}>Sin ventas aún</Text>
-                                    <Text style={styles.emptyChartSubtext}>Las ventas aparecerán aquí</Text>
+                                    <Ionicons name="trending-up-outline" size={48} color="#333" />
+                                    <Text style={styles.emptyChartText}>Sin datos para mostrar</Text>
                                 </View>
                             )
                         ) : (
-                            <Text style={{ color: 'white' }}>Gráfico disponible solo en Web</Text>
+                            <Text style={{ color: 'white' }}>Gráfico solo Web</Text>
                         )}
                     </View>
                 </View>
 
                 {/* STATUS PIE CHART */}
                 <View style={[styles.chartCard, { flex: 1 }]}>
-                    <Text style={styles.chartTitle}>Estado de Pedidos</Text>
-                    <View style={{ height: 300, width: '100%', minHeight: 300, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={styles.chartTitle}>{timeRange === 'today' ? 'Estado de Pedidos (Hoy)' : 'Estado Histórico'}</Text>
+                    <View style={{ height: 350, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
                         {Platform.OS === 'web' ? (
                             statusData && statusData.length > 0 ? (
-                                <div style={{ width: 300, height: 280, overflow: 'hidden' }}>
-                                    <PieChart width={300} height={280}>
-                                        <Pie
-                                            data={statusData}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={75}
-                                            outerRadius={100}
-                                            paddingAngle={5}
-                                            dataKey="value"
-                                            stroke="none"
-                                        >
-                                            {statusData.map((entry, index) => (
-                                                <Cell
-                                                    key={`cell-${index}`}
-                                                    fill={colors.status[entry.rawStatus]?.text || '#888'}
-                                                />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip
-                                            contentStyle={{ backgroundColor: 'rgba(30,30,30,0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: 12, backdropFilter: 'blur(10px)' }}
-                                            itemStyle={{ color: '#fff' }}
-                                        />
-                                        <Legend
-                                            verticalAlign="bottom"
-                                            height={36}
-                                            iconType="circle"
-                                            formatter={(value) => <span style={{ color: '#ccc', marginLeft: 5 }}>{value}</span>}
-                                        />
-                                    </PieChart>
+                                <div style={{ width: '100%', height: 320 }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={statusData}
+                                                cx="50%"
+                                                cy="45%"
+                                                innerRadius={80}
+                                                outerRadius={110}
+                                                paddingAngle={4}
+                                                dataKey="value"
+                                                stroke="none"
+                                            >
+                                                {statusData.map((entry, index) => (
+                                                    <Cell
+                                                        key={`cell-${index}`}
+                                                        fill={colors.status[entry.rawStatus]?.text || '#888'}
+                                                    />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip
+                                                contentStyle={{ backgroundColor: '#1E1E1E', borderColor: '#333', borderRadius: 8 }}
+                                                itemStyle={{ color: '#fff' }}
+                                                formatter={(value) => [`${value} pedidos`]}
+                                            />
+                                            <Legend content={<CustomLegend />} />
+                                        </PieChart>
+                                    </ResponsiveContainer>
                                 </div>
                             ) : (
                                 <View style={styles.emptyChart}>
-                                    <Ionicons name="pie-chart-outline" size={48} color="#444" />
-                                    <Text style={styles.emptyChartText}>Sin pedidos</Text>
-                                    <Text style={styles.emptyChartSubtext}>Los estados aparecerán aquí</Text>
+                                    <Ionicons name="pie-chart-outline" size={48} color="#333" />
+                                    <Text style={styles.emptyChartText}>Sin pedidos hoy</Text>
                                 </View>
                             )
                         ) : (
-                            <Text style={{ color: 'white' }}>Gráfico disponible solo en Web</Text>
+                            <Text style={{ color: 'white' }}>Gráfico solo Web</Text>
                         )}
                     </View>
                 </View>
@@ -232,104 +261,139 @@ export default function DashboardScreen({ user, restaurant }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 30,
+        padding: 40, // Increased padding for clearer layout
+        maxWidth: 1600,
+        alignSelf: 'center',
+        width: '100%'
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center'
     },
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 30,
+        flexWrap: 'wrap',
+        gap: 20
+    },
     pageTitle: {
-        fontSize: 32,
-        fontWeight: 'bold',
+        fontSize: 36,
+        fontWeight: '800', // Bolder title
         color: colors.textPrimary,
-        marginBottom: 5
+        marginBottom: 8,
+        letterSpacing: -0.5
     },
     pageSubtitle: {
         fontSize: 16,
         color: colors.textSecondary,
-        marginBottom: 30
+    },
+    filterContainer: {
+        flexDirection: 'row',
+        backgroundColor: colors.bgCard,
+        borderRadius: 12,
+        padding: 4,
+        borderWidth: 1,
+        borderColor: colors.glassBorder
+    },
+    filterBtn: {
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+    },
+    filterBtnActive: {
+        backgroundColor: colors.primary, // Highlight active
+    },
+    filterText: {
+        color: colors.textSecondary,
+        fontWeight: '600',
+        fontSize: 14
+    },
+    filterTextActive: {
+        color: 'white'
     },
     statsGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 20,
-        marginBottom: 30
+        gap: 24, // Consistent spacing
+        marginBottom: 40
     },
     statCard: {
         flex: 1,
-        minWidth: 200,
+        minWidth: 240,
         backgroundColor: colors.bgCard,
-        borderRadius: 16,
-        padding: 20,
+        borderRadius: 20, // Softer corners
+        padding: 24,
         flexDirection: 'row',
         alignItems: 'center',
-        // Glassmorphism logic would go here if using CSS modules, mostly simplified for RN
         borderWidth: 1,
         borderColor: colors.glassBorder,
         ...Platform.select({
             web: {
-                backdropFilter: 'blur(10px)',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)', // Deeper shadow
+                backdropFilter: 'blur(12px)'
             }
         })
     },
     iconContainer: {
-        width: 50,
-        height: 50,
-        borderRadius: 12,
+        width: 56,
+        height: 56,
+        borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 15
+        marginRight: 16
     },
     statTitle: {
         color: colors.textSecondary,
         fontSize: 14,
-        marginBottom: 4
+        fontWeight: '500',
+        marginBottom: 4,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5
     },
     statValue: {
         color: colors.textPrimary,
-        fontSize: 24,
-        fontWeight: 'bold'
+        fontSize: 28,
+        fontWeight: 'bold',
+        letterSpacing: -0.5
     },
     chartsRow: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 20,
+        gap: 24,
         marginBottom: 50
     },
     chartCard: {
         backgroundColor: colors.bgCard,
-        borderRadius: 16,
-        padding: 20,
+        borderRadius: 20,
+        padding: 24,
         borderWidth: 1,
         borderColor: colors.glassBorder,
-        minWidth: 300,
+        minWidth: 350,
         ...Platform.select({
             web: {
-                backdropFilter: 'blur(10px)',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+                backdropFilter: 'blur(12px)'
             }
         })
     },
     chartTitle: {
         color: colors.textPrimary,
         fontSize: 18,
-        fontWeight: '600',
-        marginBottom: 20
+        fontWeight: '700',
+        marginBottom: 24
     },
     tooltipContainer: {
-        backgroundColor: 'rgba(30, 30, 30, 0.85)',
+        backgroundColor: 'rgba(20, 20, 20, 0.95)',
         padding: 12,
-        borderRadius: 12,
+        borderRadius: 8,
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'blur(10px)',
-        // Web shadow
-        boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+        borderColor: '#333',
     },
     tooltipLabel: {
-        color: '#ccc',
+        color: '#888',
         fontSize: 12,
         marginBottom: 4
     },
@@ -342,19 +406,14 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        height: 280,
-        width: '100%'
+        height: 300,
+        opacity: 0.5
     },
     emptyChartText: {
         color: '#666',
-        fontSize: 18,
-        fontWeight: '600',
-        marginTop: 16
-    },
-    emptyChartSubtext: {
-        color: '#444',
-        fontSize: 14,
-        marginTop: 8
+        fontSize: 16,
+        marginTop: 16,
+        fontWeight: '600'
     }
 });
 

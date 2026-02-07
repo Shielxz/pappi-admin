@@ -408,7 +408,8 @@ export default function MenuScreen({ user, restaurant }) {
                                 placeholder="Precio"
                                 placeholderTextColor={colors.textMuted}
                                 value={productPrice}
-                                onChangeText={setProductPrice}
+                                onChangeText={(text) => setProductPrice(text.replace(/[^0-9.]/g, ''))}
+                                keyboardType="numeric"
                             />
                             <TextInput
                                 style={styles.input}
