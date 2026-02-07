@@ -81,7 +81,7 @@ export default function ImageUploader({
                 <View style={[styles.previewContainer, { backgroundColor: '#000' }]}>
                     <Image
                         source={{ uri: imagePreview }}
-                        style={[styles.preview, { height: aspectHeight }]}
+                        style={[styles.preview, { height: aspectHeight, objectFit: 'contain' }]}
                         resizeMode="contain"
                     />
                     <TouchableOpacity
