@@ -625,6 +625,16 @@ export default function MenuScreen({ user, restaurant }) {
                 onConfirm={alertConfig.onConfirm}
                 onClose={closeAlert}
             />
+            {/* CUSTOM ALERT MODAL - For Products View */}
+            <CustomAlert
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                showCancel={alertConfig.showCancel}
+                onConfirm={alertConfig.onConfirm}
+                onClose={closeAlert}
+            />
         </ScrollView>
     );
 }

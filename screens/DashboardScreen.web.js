@@ -37,6 +37,14 @@ export default function DashboardScreen({ user, restaurant }) {
         fetchDashboardData();
     }, [restaurant.id, timeRange, customStartDate, customEndDate]);
 
+    const handleRangeChange = (range) => {
+        setTimeRange(range);
+        if (range !== 'range') {
+            setCustomStartDate('');
+            setCustomEndDate('');
+        }
+    };
+
     const getChartTitle = () => {
         switch (timeRange) {
             case 'today': return 'Tendencia de Ventas (Hoy)';
@@ -122,7 +130,7 @@ export default function DashboardScreen({ user, restaurant }) {
                         <TouchableOpacity
                             key={range}
                             style={[styles.filterBtn, timeRange === range && styles.filterBtnActive]}
-                            onPress={() => setTimeRange(range)}
+                            onPress={() => handleRangeChange(range)}
                         >
                             <Text style={[styles.filterText, timeRange === range && styles.filterTextActive]}>
                                 {range === 'today' ? 'Hoy' : range === 'week' ? 'Semana' : 'Mes'}
@@ -130,19 +138,45 @@ export default function DashboardScreen({ user, restaurant }) {
                         </TouchableOpacity>
                     ))}
 
-                    {/* Range Picker */}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#222', borderRadius: 8, paddingHorizontal: 10 }}>
-                        <Text style={{ color: '#888', marginRight: 5, fontSize: 12 }}>Desde:</Text>
+                    {/* Range Picker - Styled for Dark Mode */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#222', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, marginLeft: 10 }}>
+                        <Text style={{ color: '#888', marginRight: 8, fontSize: 12, fontWeight: '600' }}>Desde:</Text>
                         <input
                             type="date"
-                            style={{ background: 'transparent', border: 'none', color: 'white', fontSize: 12 }}
-                            onChange={(e) => { setCustomStartDate(e.target.value); setTimeRange('range'); }}
+                            value={customStartDate}
+                            style={{
+                                background: '#333',
+                                border: '1px solid #444',
+                                color: 'white',
+                                fontSize: 12,
+                                padding: '4px 8px',
+                                borderRadius: '6px',
+                                outline: 'none',
+                                colorScheme: 'dark'
+                            }}
+                            onChange={(e) => {
+                                setCustomStartDate(e.target.value);
+                                if (e.target.value) setTimeRange('range');
+                            }}
                         />
-                        <Text style={{ color: '#888', marginHorizontal: 5, fontSize: 12 }}>Hasta:</Text>
+                        <Text style={{ color: '#888', marginHorizontal: 8, fontSize: 12, fontWeight: '600' }}>Hasta:</Text>
                         <input
                             type="date"
-                            style={{ background: 'transparent', border: 'none', color: 'white', fontSize: 12 }}
-                            onChange={(e) => { setCustomEndDate(e.target.value); setTimeRange('range'); }}
+                            value={customEndDate}
+                            style={{
+                                background: '#333',
+                                border: '1px solid #444',
+                                color: 'white',
+                                fontSize: 12,
+                                padding: '4px 8px',
+                                borderRadius: '6px',
+                                outline: 'none',
+                                colorScheme: 'dark'
+                            }}
+                            onChange={(e) => {
+                                setCustomEndDate(e.target.value);
+                                if (e.target.value) setTimeRange('range');
+                            }}
                         />
                     </View>
                 </View>

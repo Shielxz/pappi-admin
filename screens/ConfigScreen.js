@@ -103,23 +103,24 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
         <ScrollView style={styles.container}>
             <Text style={styles.header}>Configuración del Restaurante</Text>
 
-            <View style={styles.section}>
-                <ImageUploader
-                    label="Logo del Restaurante"
-                    imagePreview={imagePreview}
-                    onImageSelect={(file) => {
-                        setImageFile(file);
-                        setImagePreview(URL.createObjectURL(file));
-                    }}
-                    onRemoveImage={() => { setImageFile(null); setImagePreview(null); }}
-                    aspectRatio={1}
-                    helperText="Se recomienda imagen cuadrada para mejor visualización"
-                />
-            </View>
+            <View style={styles.topLayout}>
+                <View style={styles.logoSection}>
+                    <ImageUploader
+                        label="Logo"
+                        imagePreview={imagePreview}
+                        onImageSelect={(file) => {
+                            setImageFile(file);
+                            setImagePreview(URL.createObjectURL(file));
+                        }}
+                        onRemoveImage={() => { setImageFile(null); setImagePreview(null); }}
+                        aspectRatio={1}
+                        helperText=""
+                        compact={true}
+                    />
+                </View>
 
-            <View style={styles.rowContainer}>
-                <View style={[styles.section, { flex: 1, marginRight: 10 }]}>
-                    <Text style={styles.label}>Nombre del Restaurante:</Text>
+                <View style={[styles.section, styles.infoColumn]}>
+                    <Text style={styles.label}>Nombre:</Text>
                     <TextInput
                         style={styles.input}
                         placeholderTextColor="#666"
@@ -127,10 +128,8 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
                         onChangeText={setName}
                         placeholder="Mi Restaurante"
                     />
-                </View>
 
-                <View style={[styles.section, { flex: 1 }]}>
-                    <Text style={styles.label}>Categoría:</Text>
+                    <Text style={[styles.label, { marginTop: 12 }]}>Categoría:</Text>
                     <TextInput
                         style={styles.input}
                         placeholderTextColor="#666"
@@ -202,11 +201,33 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         width: '100%'
     },
+    topLayout: {
+        flexDirection: 'row',
+        gap: 16,
+        marginBottom: 16,
+        height: 200 // Fixed height for alignment
+    },
+    logoSection: {
+        width: 200, // Fixed width for logo column
+        backgroundColor: colors.bgCard,
+        borderRadius: 20,
+        padding: 10,
+        borderWidth: 1,
+        borderColor: colors.glassBorder,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    infoColumn: {
+        flex: 1,
+        marginBottom: 0, // Reset margin since it's in a row
+        justifyContent: 'center',
+        paddingVertical: 20
+    },
     section: {
         backgroundColor: colors.bgCard,
-        padding: 16, // Reduced padding
+        padding: 16,
         borderRadius: 20,
-        marginBottom: 16, // Reduced margin
+        marginBottom: 16,
         borderWidth: 1,
         borderColor: colors.glassBorder,
         ...Platform.select({
@@ -214,23 +235,22 @@ const styles = StyleSheet.create({
             default: { elevation: 2 }
         })
     },
-    label: { fontSize: 13, fontWeight: '600', marginBottom: 8, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
+    label: { fontSize: 13, fontWeight: '600', marginBottom: 6, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
     input: {
         borderWidth: 1,
         borderColor: '#333',
-        padding: 14, // Reduced padding
+        padding: 12,
         borderRadius: 12,
         fontSize: 15,
         backgroundColor: '#151515',
         color: 'white',
         fontWeight: '500'
     },
-    textArea: { minHeight: 80, textAlignVertical: 'top' }, // Reduced height
+    textArea: { minHeight: 80, textAlignVertical: 'top' },
     logoPreview: {
-        width: 200,
-        height: 200,
-        borderRadius: 20,
-        marginBottom: 15,
+        width: 140, // Smaller preview
+        height: 140,
+        borderRadius: 16,
         alignSelf: 'center',
         borderWidth: 1,
         borderColor: '#333'
