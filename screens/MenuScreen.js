@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Modal, Image, Platform, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Modal, Image, Platform, ActivityIndicator } from 'react-native';
 import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 import ImageCropperModal from '../components/ImageCropperModal';
@@ -17,8 +17,6 @@ const MAX_IMAGE_DIMENSION = 1200; // 1200px
 export default function MenuScreen({ user, restaurant }) {
 
     const [categories, setCategories] = useState([]);
-    const { width: windowWidth } = useWindowDimensions();
-    const isMobile = windowWidth < 768;
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [products, setProducts] = useState([]);
 
@@ -511,8 +509,8 @@ export default function MenuScreen({ user, restaurant }) {
     }
 
     return (
-        <ScrollView style={[styles.container, isMobile && { padding: 16 }]}>
-            <Text style={[styles.header, isMobile && { fontSize: 24 }]}>Mis Menús</Text>
+        <ScrollView style={styles.container}>
+            <Text style={styles.header}>Mis Menús</Text>
 
             <TouchableOpacity style={styles.btn} onPress={() => setShowCategoryModal(true)}>
                 <Ionicons name="add-circle-outline" size={20} color="white" style={{ marginRight: 8 }} />
@@ -520,11 +518,11 @@ export default function MenuScreen({ user, restaurant }) {
             </TouchableOpacity>
 
 
-            <View style={[styles.categoriesGrid, isMobile && { gap: 12 }]}>
+            <View style={styles.categoriesGrid}>
                 {categories.map(category => (
                     <TouchableOpacity
                         key={category.id}
-                        style={[styles.categoryCard, isMobile && { width: '100%' }]}
+                        style={styles.categoryCard}
                         onPress={() => {
                             setSelectedCategory(category);
                             loadProductsByCategory(category.id);

@@ -180,85 +180,88 @@ export default function App() {
     const renderSidebar = (isSuperAdmin = false) => (
         <View style={[
             styles.sidebar,
-            isMobile && styles.sidebarMobile
+            isMobile && styles.sidebarMobile,
+            { flex: 1, justifyContent: 'space-between' }
         ]}>
-            {/* Close button on mobile */}
-            {isMobile && (
-                <TouchableOpacity
-                    style={styles.closeBtn}
-                    onPress={() => setSidebarOpen(false)}
-                >
-                    <Ionicons name="close" size={28} color={colors.textSecondary} />
-                </TouchableOpacity>
-            )}
+            <View>
+                {/* Close button on mobile */}
+                {isMobile && (
+                    <TouchableOpacity
+                        style={styles.closeBtn}
+                        onPress={() => setSidebarOpen(false)}
+                    >
+                        <Ionicons name="close" size={28} color={colors.textSecondary} />
+                    </TouchableOpacity>
+                )}
 
-            <View style={styles.branding}>
+                <View style={styles.branding}>
+                    {isSuperAdmin ? (
+                        <>
+                            <Text style={styles.logo}>⚡ Pappi<Text style={{ color: colors.primary }}>GOD</Text></Text>
+                            <Text style={styles.welcomeText}>Super Admin Access</Text>
+                        </>
+                    ) : (
+                        <>
+                            <Text style={styles.logo}>Pappi<Text style={{ color: colors.primary }}>Negocio</Text></Text>
+                            <Text style={styles.welcomeText}>Hola, {user.name}</Text>
+                        </>
+                    )}
+                </View>
+
                 {isSuperAdmin ? (
-                    <>
-                        <Text style={styles.logo}>⚡ Pappi<Text style={{ color: colors.primary }}>GOD</Text></Text>
-                        <Text style={styles.welcomeText}>Super Admin Access</Text>
-                    </>
+                    <TouchableOpacity style={[styles.menuItem, styles.menuItemActive]}>
+                        <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
+                        <Text style={[styles.menuText, styles.menuTextActive]}>Aprobaciones</Text>
+                    </TouchableOpacity>
                 ) : (
-                    <>
-                        <Text style={styles.logo}>Pappi<Text style={{ color: colors.primary }}>Negocio</Text></Text>
-                        <Text style={styles.welcomeText}>Hola, {user.name}</Text>
-                    </>
+                    <View style={styles.navMenu}>
+                        <TouchableOpacity
+                            style={[styles.menuItem, currentScreen === 'dashboard' && styles.menuItemActive]}
+                            onPress={() => navigateTo('dashboard')}
+                        >
+                            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                <Ionicons name="stats-chart" size={20} color={currentScreen === 'dashboard' ? colors.primary : colors.textSecondary} />
+                                <Text style={[styles.menuText, currentScreen === 'dashboard' && styles.menuTextActive]}>Dashboard</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.menuItem, currentScreen === 'orders' && styles.menuItemActive]}
+                            onPress={() => navigateTo('orders')}
+                        >
+                            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                <MaterialCommunityIcons name="motorbike" size={20} color={currentScreen === 'orders' ? colors.primary : colors.textSecondary} />
+                                <Text style={[styles.menuText, currentScreen === 'orders' && styles.menuTextActive]}>Pedidos</Text>
+                            </View>
+                            {pendingOrdersCount > 0 && (
+                                <View style={styles.badge}>
+                                    <Text style={styles.badgeText}>{pendingOrdersCount}</Text>
+                                </View>
+                            )}
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.menuItem, currentScreen === 'menu' && styles.menuItemActive]}
+                            onPress={() => navigateTo('menu')}
+                        >
+                            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                <Ionicons name="fast-food" size={20} color={currentScreen === 'menu' ? colors.primary : colors.textSecondary} />
+                                <Text style={[styles.menuText, currentScreen === 'menu' && styles.menuTextActive]}>Menú</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.menuItem, currentScreen === 'config' && styles.menuItemActive]}
+                            onPress={() => navigateTo('config')}
+                        >
+                            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                <Ionicons name="settings" size={20} color={currentScreen === 'config' ? colors.primary : colors.textSecondary} />
+                                <Text style={[styles.menuText, currentScreen === 'config' && styles.menuTextActive]}>Ajustes</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
                 )}
             </View>
-
-            {isSuperAdmin ? (
-                <TouchableOpacity style={[styles.menuItem, styles.menuItemActive]}>
-                    <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
-                    <Text style={[styles.menuText, styles.menuTextActive]}>Aprobaciones</Text>
-                </TouchableOpacity>
-            ) : (
-                <View style={styles.navMenu}>
-                    <TouchableOpacity
-                        style={[styles.menuItem, currentScreen === 'dashboard' && styles.menuItemActive]}
-                        onPress={() => navigateTo('dashboard')}
-                    >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                            <Ionicons name="stats-chart" size={20} color={currentScreen === 'dashboard' ? colors.primary : colors.textSecondary} />
-                            <Text style={[styles.menuText, currentScreen === 'dashboard' && styles.menuTextActive]}>Dashboard</Text>
-                        </View>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.menuItem, currentScreen === 'orders' && styles.menuItemActive]}
-                        onPress={() => navigateTo('orders')}
-                    >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                            <MaterialCommunityIcons name="motorbike" size={20} color={currentScreen === 'orders' ? colors.primary : colors.textSecondary} />
-                            <Text style={[styles.menuText, currentScreen === 'orders' && styles.menuTextActive]}>Pedidos</Text>
-                        </View>
-                        {pendingOrdersCount > 0 && (
-                            <View style={styles.badge}>
-                                <Text style={styles.badgeText}>{pendingOrdersCount}</Text>
-                            </View>
-                        )}
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.menuItem, currentScreen === 'menu' && styles.menuItemActive]}
-                        onPress={() => navigateTo('menu')}
-                    >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                            <Ionicons name="fast-food" size={20} color={currentScreen === 'menu' ? colors.primary : colors.textSecondary} />
-                            <Text style={[styles.menuText, currentScreen === 'menu' && styles.menuTextActive]}>Menú</Text>
-                        </View>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.menuItem, currentScreen === 'config' && styles.menuItemActive]}
-                        onPress={() => navigateTo('config')}
-                    >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                            <Ionicons name="settings" size={20} color={currentScreen === 'config' ? colors.primary : colors.textSecondary} />
-                            <Text style={[styles.menuText, currentScreen === 'config' && styles.menuTextActive]}>Ajustes</Text>
-                        </View>
-                    </TouchableOpacity>
-                </View>
-            )}
 
             <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
                 <Ionicons name="log-out-outline" size={20} color={colors.danger} />
@@ -279,7 +282,9 @@ export default function App() {
             <Text style={styles.mobileTitle}>
                 Pappi<Text style={{ color: colors.primary }}>Negocio</Text>
             </Text>
-            <View style={{ width: 40 }} />
+            <TouchableOpacity onPress={handleLogout} style={{ padding: 8 }}>
+                <Ionicons name="log-out-outline" size={22} color={colors.danger} />
+            </TouchableOpacity>
         </View>
     );
 
