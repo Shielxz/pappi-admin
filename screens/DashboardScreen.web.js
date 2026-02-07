@@ -287,7 +287,7 @@ export default function DashboardScreen({ user, restaurant }) {
                     <View style={{ height: isMobile ? 250 : 350, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
                         {Platform.OS === 'web' ? (
                             <div style={{ width: '100%', height: '100%' }}>
-                                <ResponsiveContainer width={'100%'} height={isMobile ? 230 : 320}>
+                                <ResponsiveContainer width={isMobile ? '100%' : 300} height={isMobile ? 230 : 320}>
                                     <PieChart>
                                         <Pie
                                             data={statusData}
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     },
     statCard: {
         flex: 1,
-        minWidth: 200,
+        minWidth: 240,
         backgroundColor: colors.bgCard,
         borderRadius: 20, // Softer corners
         padding: 24,
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
         padding: 24,
         borderWidth: 1,
         borderColor: colors.glassBorder,
-        minWidth: 280,
+        minWidth: 350,
         ...Platform.select({
             web: {
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
