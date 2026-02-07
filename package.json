@@ -1,6 +1,6 @@
 {
     "name": "pappi_admin",
-    "version": "0.6.1",
+    "version": "0.6.2",
     "main": "index.js",
     "scripts": {
         "start": "expo start",

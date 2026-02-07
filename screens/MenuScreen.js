@@ -686,9 +686,6 @@ const styles = StyleSheet.create({
     categoriesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 20 },
     categoryCard: {
         width: 200,
-        minWidth: 140,
-        maxWidth: '100%',
-        flexGrow: 1,
         backgroundColor: colors.bgCard,
         borderRadius: 16,
         padding: 15,
@@ -716,8 +713,6 @@ const styles = StyleSheet.create({
     productsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 20, marginTop: 10 },
     productCard: {
         width: 220,
-        minWidth: 160,
-        maxWidth: '100%',
         backgroundColor: colors.bgCard,
         borderRadius: 16,
         padding: 15,

@@ -251,7 +251,7 @@ export default function DashboardScreen({ user, restaurant }) {
             {/* CHARTS ROW */}
             <View style={[styles.chartsRow, isMobile && { flexDirection: 'column', gap: 16 }]}>
                 {/* SALES AREA CHART */}
-                <View style={[styles.chartCard, { flex: 2 }, isMobile && { minWidth: 0, padding: 12, flex: 'auto' }]}>
+                <View style={[styles.chartCard, { flex: 2 }, isMobile && { minWidth: 0, padding: 12 }]}>
                     <Text style={styles.chartTitle}>{getChartTitle()}</Text>
                     <View style={{ height: isMobile ? 220 : 350, width: '100%' }}>
                         {Platform.OS === 'web' ? (
@@ -282,7 +282,7 @@ export default function DashboardScreen({ user, restaurant }) {
                 </View>
 
                 {/* STATUS DONUT CHART */}
-                <View style={[styles.chartCard, { flex: 1 }, isMobile && { minWidth: 0, padding: 12, flex: 'auto' }]}>
+                <View style={[styles.chartCard, { flex: 1 }, isMobile && { minWidth: 0, padding: 12 }]}>
                     <Text style={styles.chartTitle}>Estado de Pedidos</Text>
                     <View style={{ height: isMobile ? 250 : 350, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
                         {Platform.OS === 'web' ? (
