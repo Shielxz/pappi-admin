@@ -154,7 +154,7 @@ export default function DashboardScreen({ user, restaurant }) {
                     <View style={{ height: 350, width: '100%' }}>
                         {Platform.OS === 'web' ? (
                             salesData && salesData.length > 0 ? (
-                                <div style={{ width: '100%', height: 320, overflow: 'hidden' }}>
+                                <div style={{ width: '100%', height: '100%' }}>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <AreaChart data={salesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                             <defs>
@@ -212,7 +212,7 @@ export default function DashboardScreen({ user, restaurant }) {
                     <View style={{ height: 350, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
                         {Platform.OS === 'web' ? (
                             statusData && statusData.length > 0 ? (
-                                <div style={{ width: '100%', height: 320 }}>
+                                <div style={{ width: '100%', height: '100%' }}>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
                                             <Pie

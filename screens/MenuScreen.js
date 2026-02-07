@@ -143,28 +143,36 @@ export default function MenuScreen({ user, restaurant }) {
     };
 
     const deleteCategory = async (id) => {
-        Alert.alert("Confirmar", "¿Eliminar esta categoría?", [
-            { text: "Cancelar", style: "cancel" },
-            {
-                text: "Eliminar",
-                style: "destructive",
-                onPress: async () => {
-                    try {
-                        await fetch(`${API_URL}/categories/${id}`, {
-                            method: 'DELETE',
-                            headers: DEFAULT_HEADERS
-                        });
-                        loadCategories(restaurant.id);
-                        if (selectedCategory?.id === id) {
-                            setSelectedCategory(null);
-                            setProducts([]);
-                        }
-                    } catch (e) {
-                        Alert.alert("Error", e.message);
-                    }
+        const confirmDelete = async () => {
+            try {
+                await fetch(`${API_URL}/categories/${id}`, {
+                    method: 'DELETE',
+                    headers: DEFAULT_HEADERS
+                });
+                loadCategories(restaurant.id);
+                if (selectedCategory?.id === id) {
+                    setSelectedCategory(null);
+                    setProducts([]);
                 }
+            } catch (e) {
+                Alert.alert("Error", e.message);
             }
-        ]);
+        };
+
+        if (Platform.OS === 'web') {
+            if (window.confirm("¿Eliminar esta categoría?")) {
+                confirmDelete();
+            }
+        } else {
+            Alert.alert("Confirmar", "¿Eliminar esta categoría?", [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Eliminar",
+                    style: "destructive",
+                    onPress: confirmDelete
+                }
+            ]);
+        }
     };
 
     const saveProduct = async () => {
@@ -210,24 +218,32 @@ export default function MenuScreen({ user, restaurant }) {
     };
 
     const deleteProduct = async (id) => {
-        Alert.alert("Confirmar", "¿Eliminar este producto?", [
-            { text: "Cancelar", style: "cancel" },
-            {
-                text: "Eliminar",
-                style: "destructive",
-                onPress: async () => {
-                    try {
-                        await fetch(`${API_URL}/products/${id}`, {
-                            method: 'DELETE',
-                            headers: DEFAULT_HEADERS
-                        });
-                        loadProductsByCategory(selectedCategory.id);
-                    } catch (e) {
-                        Alert.alert("Error", e.message);
-                    }
-                }
+        const confirmDelete = async () => {
+            try {
+                await fetch(`${API_URL}/products/${id}`, {
+                    method: 'DELETE',
+                    headers: DEFAULT_HEADERS
+                });
+                loadProductsByCategory(selectedCategory.id);
+            } catch (e) {
+                Alert.alert("Error", e.message);
             }
-        ]);
+        };
+
+        if (Platform.OS === 'web') {
+            if (window.confirm("¿Eliminar este producto?")) {
+                confirmDelete();
+            }
+        } else {
+            Alert.alert("Confirmar", "¿Eliminar este producto?", [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Eliminar",
+                    style: "destructive",
+                    onPress: confirmDelete
+                }
+            ]);
+        }
     };
 
     const resetCategoryForm = () => {

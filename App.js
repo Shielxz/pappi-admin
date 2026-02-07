@@ -15,6 +15,18 @@ import io from 'socket.io-client';
 import { SOCKET_URL, API_URL, DEFAULT_HEADERS } from './services/config';
 import { api } from './services/api';
 
+// WEB SCROLLBAR STYLING
+if (Platform.OS === 'web') {
+    const style = document.createElement('style');
+    style.textContent = `
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #121212; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    `;
+    document.head.appendChild(style);
+}
+
 export default function App() {
     const [user, setUser] = useState(null);
     const [authToken, setAuthToken] = useState(null);
