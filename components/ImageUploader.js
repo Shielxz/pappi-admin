@@ -58,7 +58,7 @@ export default function ImageUploader({
         }
     };
 
-    const aspectHeight = aspectRatio === 1 ? 200 : 120;
+    const aspectHeight = aspectRatio === 1 ? 160 : 120; // Reduced height
 
     return (
         <View style={styles.container}>
@@ -75,11 +75,11 @@ export default function ImageUploader({
 
             {/* Upload Area */}
             {imagePreview ? (
-                <View style={styles.previewContainer}>
+                <View style={[styles.previewContainer, { backgroundColor: '#000' }]}>
                     <Image
                         source={{ uri: imagePreview }}
                         style={[styles.preview, { height: aspectHeight }]}
-                        resizeMode="cover"
+                        resizeMode="contain"
                     />
                     <TouchableOpacity
                         style={styles.removeBtn}

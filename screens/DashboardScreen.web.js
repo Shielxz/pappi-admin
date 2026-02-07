@@ -9,9 +9,9 @@ import { Ionicons } from '@expo/vector-icons';
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
-            <View style={styles.tooltipContainer}>
-                <Text style={styles.tooltipLabel}>{label}</Text>
-                <Text style={styles.tooltipValue}>
+            <View style={[styles.tooltipContainer, { backgroundColor: '#1E1E1E' }]}>
+                <Text style={[styles.tooltipLabel, { color: '#ccc' }]}>{label}</Text>
+                <Text style={[styles.tooltipValue, { color: '#fff' }]}>
                     ${payload[0].value.toFixed(2)}
                 </Text>
             </View>
@@ -27,19 +27,40 @@ export default function DashboardScreen({ user, restaurant }) {
     const [salesData, setSalesData] = useState([]);
     const [statusData, setStatusData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [timeRange, setTimeRange] = useState('today'); // 'today' | 'all'
+
+    // Filter States
+    const [timeRange, setTimeRange] = useState('today'); // 'today' | 'week' | 'month' | 'year' | 'range'
+    const [customStartDate, setCustomStartDate] = useState('');
+    const [customEndDate, setCustomEndDate] = useState('');
 
     useEffect(() => {
         fetchDashboardData();
-    }, [restaurant.id, timeRange]);
+    }, [restaurant.id, timeRange, customStartDate, customEndDate]);
+
+    const getChartTitle = () => {
+        switch (timeRange) {
+            case 'today': return 'Tendencia de Ventas (Hoy)';
+            case 'week': return 'Tendencia de Ventas (Esta Semana)';
+            case 'month': return 'Tendencia de Ventas (Este Mes)';
+            case 'year': return 'Tendencia de Ventas (Este Año)';
+            case 'range': return `Tendencia de Ventas (${customStartDate} - ${customEndDate})`;
+            default: return 'Tendencia de Ventas';
+        }
+    };
 
     const fetchDashboardData = async () => {
         try {
+            // Determine query params
+            let query = `?range=${timeRange}`;
+            if (timeRange === 'range' && customStartDate && customEndDate) {
+                query += `&start=${customStartDate}&end=${customEndDate}`;
+            }
+
             setLoading(true);
             const [summaryRes, salesRes, statusRes] = await Promise.all([
-                fetch(`${API_URL}/analytics/summary/${restaurant.id}?range=${timeRange}`, { headers: DEFAULT_HEADERS }),
-                fetch(`${API_URL}/analytics/sales-chart/${restaurant.id}?range=${timeRange}`, { headers: DEFAULT_HEADERS }),
-                fetch(`${API_URL}/analytics/status-distribution/${restaurant.id}?range=${timeRange}`, { headers: DEFAULT_HEADERS })
+                fetch(`${API_URL}/analytics/summary/${restaurant.id}${query}`, { headers: DEFAULT_HEADERS }),
+                fetch(`${API_URL}/analytics/sales-chart/${restaurant.id}${query}`, { headers: DEFAULT_HEADERS }),
+                fetch(`${API_URL}/analytics/status-distribution/${restaurant.id}${query}`, { headers: DEFAULT_HEADERS })
             ]);
 
             const summaryJson = await summaryRes.json();
@@ -78,18 +99,12 @@ export default function DashboardScreen({ user, restaurant }) {
         </View>
     );
 
-    const CustomLegend = ({ payload }) => {
+    // Render Center Label for Donut
+    const renderCustomizedLabel = ({ cx, cy }) => {
         return (
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 10 }}>
-                {payload.map((entry, index) => (
-                    <View key={`legend-${index}`} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15, marginBottom: 5 }}>
-                        <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: entry.color, marginRight: 5 }} />
-                        <Text style={{ color: '#ccc', fontSize: 12 }}>
-                            {entry.value} <Text style={{ fontWeight: 'bold', color: 'white' }}>({entry.payload.value})</Text>
-                        </Text>
-                    </View>
-                ))}
-            </View>
+            <text x={cx} y={cy} dy={8} textAnchor="middle" fill="white" style={{ fontSize: '24px', fontWeight: 'bold' }}>
+                {summary?.totalOrders || 0}
+            </text>
         );
     };
 
@@ -101,160 +116,128 @@ export default function DashboardScreen({ user, restaurant }) {
                     <Text style={styles.pageSubtitle}>Resumen de actividad en tiempo real</Text>
                 </View>
 
-                {/* DATE FILTERS */}
+                {/* ADVANCED FILTERS */}
                 <View style={styles.filterContainer}>
-                    <TouchableOpacity
-                        style={[styles.filterBtn, timeRange === 'today' && styles.filterBtnActive]}
-                        onPress={() => setTimeRange('today')}
-                    >
-                        <Text style={[styles.filterText, timeRange === 'today' && styles.filterTextActive]}>Hoy</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.filterBtn, timeRange === 'all' && styles.filterBtnActive]}
-                        onPress={() => setTimeRange('all')}
-                    >
-                        <Text style={[styles.filterText, timeRange === 'all' && styles.filterTextActive]}>Histórico</Text>
-                    </TouchableOpacity>
+                    {['today', 'week', 'month'].map((range) => (
+                        <TouchableOpacity
+                            key={range}
+                            style={[styles.filterBtn, timeRange === range && styles.filterBtnActive]}
+                            onPress={() => setTimeRange(range)}
+                        >
+                            <Text style={[styles.filterText, timeRange === range && styles.filterTextActive]}>
+                                {range === 'today' ? 'Hoy' : range === 'week' ? 'Semana' : 'Mes'}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+
+                    {/* Range Picker */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#222', borderRadius: 8, paddingHorizontal: 10 }}>
+                        <Text style={{ color: '#888', marginRight: 5, fontSize: 12 }}>Desde:</Text>
+                        <input
+                            type="date"
+                            style={{ background: 'transparent', border: 'none', color: 'white', fontSize: 12 }}
+                            onChange={(e) => { setCustomStartDate(e.target.value); setTimeRange('range'); }}
+                        />
+                        <Text style={{ color: '#888', marginHorizontal: 5, fontSize: 12 }}>Hasta:</Text>
+                        <input
+                            type="date"
+                            style={{ background: 'transparent', border: 'none', color: 'white', fontSize: 12 }}
+                            onChange={(e) => { setCustomEndDate(e.target.value); setTimeRange('range'); }}
+                        />
+                    </View>
                 </View>
             </View>
 
             {/* TOP METRICS ROW */}
             <View style={styles.statsGrid}>
-                <StatCard
-                    title="Ventas Totales"
-                    value={`$${summary?.totalSales?.toFixed(2) || '0.00'}`}
-                    icon="cash-outline"
-                    color="#00E676"
-                />
-                <StatCard
-                    title="Pedidos"
-                    value={summary?.totalOrders || 0}
-                    icon="receipt-outline"
-                    color="#2979FF"
-                />
-                <StatCard
-                    title="Ticket Promedio"
-                    value={`$${summary?.avgTicket?.toFixed(2) || '0.00'}`}
-                    icon="analytics-outline"
-                    color="#FF4500"
-                />
-                <StatCard
-                    title="Pendientes"
-                    value={summary?.pendingOrders || 0}
-                    icon="time-outline"
-                    color="#FFC107"
-                />
+                <StatCard title="Ventas Totales" value={`$${summary?.totalSales?.toFixed(2) || '0.00'}`} icon="cash-outline" color="#00E676" />
+                <StatCard title="Pedidos" value={summary?.totalOrders || 0} icon="receipt-outline" color="#2979FF" />
+                <StatCard title="Ticket Promedio" value={`$${summary?.avgTicket?.toFixed(2) || '0.00'}`} icon="analytics-outline" color="#FF4500" />
+                <StatCard title="Pendientes" value={summary?.pendingOrders || 0} icon="time-outline" color="#FFC107" />
             </View>
 
             {/* CHARTS ROW */}
             <View style={styles.chartsRow}>
                 {/* SALES AREA CHART */}
                 <View style={[styles.chartCard, { flex: 2 }]}>
-                    <Text style={styles.chartTitle}>Tendencia de Ventas (30 Días)</Text>
+                    <Text style={styles.chartTitle}>{getChartTitle()}</Text>
                     <View style={{ height: 350, width: '100%' }}>
                         {Platform.OS === 'web' ? (
-                            salesData && salesData.length > 0 ? (
-                                <div style={{ width: '100%', height: '100%' }}>
-                                    <ResponsiveContainer width={600} height={320}>
-                                        <AreaChart data={salesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                            <defs>
-                                                <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor={colors.primary} stopOpacity={0.4} />
-                                                    <stop offset="95%" stopColor={colors.primary} stopOpacity={0} />
-                                                </linearGradient>
-                                            </defs>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                                            <XAxis
-                                                dataKey="date"
-                                                stroke="#666"
-                                                tick={{ fill: '#888', fontSize: 11 }}
-                                                tickLine={false}
-                                                axisLine={false}
-                                                dy={10}
-                                                tickFormatter={(str) => {
-                                                    const date = new Date(str);
-                                                    return `${date.getDate()}/${date.getMonth() + 1}`;
-                                                }}
-                                            />
-                                            <YAxis
-                                                stroke="#666"
-                                                tick={{ fill: '#888', fontSize: 11 }}
-                                                tickLine={false}
-                                                axisLine={false}
-                                            />
-                                            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }} />
-                                            <Area
-                                                type="monotone"
-                                                dataKey="sales"
-                                                stroke={colors.primary}
-                                                strokeWidth={3}
-                                                fillOpacity={1}
-                                                fill="url(#colorSales)"
-                                            />
-                                        </AreaChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            ) : (
-                                <View style={styles.emptyChart}>
-                                    <Ionicons name="trending-up-outline" size={48} color="#333" />
-                                    <Text style={styles.emptyChartText}>Sin datos para mostrar</Text>
-                                </View>
-                            )
-                        ) : (
-                            <Text style={{ color: 'white' }}>Gráfico solo Web</Text>
-                        )}
+                            <div style={{ width: '100%', height: '100%' }}>
+                                <ResponsiveContainer width={600} height={320}>
+                                    <AreaChart data={salesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                        <defs>
+                                            <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor={colors.primary} stopOpacity={0.4} />
+                                                <stop offset="95%" stopColor={colors.primary} stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                                        <XAxis dataKey="date" stroke="#666" tick={{ fill: '#888', fontSize: 11 }} tickLine={false} axisLine={false} dy={10}
+                                            tickFormatter={(str) => {
+                                                const date = new Date(str);
+                                                return `${date.getDate()}/${date.getMonth() + 1}`;
+                                            }}
+                                        />
+                                        <YAxis stroke="#666" tick={{ fill: '#888', fontSize: 11 }} tickLine={false} axisLine={false} />
+                                        <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }} />
+                                        <Area type="monotone" dataKey="sales" stroke={colors.primary} strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                        ) : null}
                     </View>
                 </View>
 
-                {/* STATUS PIE CHART */}
+                {/* STATUS DONUT CHART */}
                 <View style={[styles.chartCard, { flex: 1 }]}>
-                    <Text style={styles.chartTitle}>{timeRange === 'today' ? 'Estado de Pedidos (Hoy)' : 'Estado Histórico'}</Text>
+                    <Text style={styles.chartTitle}>Estado de Pedidos</Text>
                     <View style={{ height: 350, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
                         {Platform.OS === 'web' ? (
-                            statusData && statusData.length > 0 ? (
-                                <div style={{ width: '100%', height: '100%' }}>
-                                    <ResponsiveContainer width={300} height={320}>
-                                        <PieChart>
-                                            <Pie
-                                                data={statusData}
-                                                cx="50%"
-                                                cy="45%"
-                                                innerRadius={80}
-                                                outerRadius={110}
-                                                paddingAngle={4}
-                                                dataKey="value"
-                                                stroke="none"
-                                            >
-                                                {statusData.map((entry, index) => (
-                                                    <Cell
-                                                        key={`cell-${index}`}
-                                                        fill={colors.status[entry.rawStatus]?.text || '#888'}
-                                                    />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip
-                                                contentStyle={{ backgroundColor: '#1E1E1E', borderColor: '#333', borderRadius: 8 }}
-                                                itemStyle={{ color: '#fff' }}
-                                                formatter={(value) => [`${value} pedidos`]}
-                                            />
-                                            <Legend content={<CustomLegend />} />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            ) : (
-                                <View style={styles.emptyChart}>
-                                    <Ionicons name="pie-chart-outline" size={48} color="#333" />
-                                    <Text style={styles.emptyChartText}>Sin pedidos hoy</Text>
-                                </View>
-                            )
-                        ) : (
-                            <Text style={{ color: 'white' }}>Gráfico solo Web</Text>
-                        )}
+                            <div style={{ width: '100%', height: '100%' }}>
+                                <ResponsiveContainer width={300} height={320}>
+                                    <PieChart>
+                                        <Pie
+                                            data={statusData}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={80}
+                                            outerRadius={100}
+                                            paddingAngle={5}
+                                            dataKey="value"
+                                            stroke="none"
+                                        >
+                                            {statusData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={colors.status[entry.rawStatus]?.text || '#888'} />
+                                            ))}
+                                            {/* Label logic would go here if Recharts supported component as label easily, 
+                                                    but we render text manually centered via absolute position or pure SVG text if needed. 
+                                                    Since Recharts makes it hard to mix SVG text inside, we can just overlay standard RN View if we want 
+                                                    or use the Label component. */}
+                                        </Pie>
+                                        <Tooltip contentStyle={{ backgroundColor: '#1E1E1E', borderColor: '#333' }} itemStyle={{ color: '#fff' }} />
+                                        <Legend verticalAlign="bottom" height={36} />
+                                        {/* Center Label for Total */}
+                                        <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: 24, fontWeight: 'bold', fill: 'white' }}>
+                                            {summary?.totalOrders || 0}
+                                        </text>
+                                        <text x="50%" y="56%" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: 14, fill: '#888' }}>
+                                            Total
+                                        </text>
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+                        ) : null}
                     </View>
                 </View>
             </View>
+            <Text style={{ color: 'white' }}>Gráfico solo Web</Text>
+                        )}
+        </View>
+                </View >
+            </View >
 
-        </ScrollView>
+        </ScrollView >
     );
 }
 
