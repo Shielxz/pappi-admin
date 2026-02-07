@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, Platform, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Platform, Dimensions, useWindowDimensions, Animated } from 'react-native';
 import AuthScreen from './screens/AuthScreen';
 import MenuScreen from './screens/MenuScreen';
 import OrdersScreen from './screens/OrdersScreen';
@@ -36,10 +36,15 @@ export default function App() {
     const [authToken, setAuthToken] = useState(null);
     const [currentScreen, setCurrentScreen] = useState('dashboard');
     const [restaurant, setRestaurant] = useState(null);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const [socket, setSocket] = useState(null);
     const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
     const [toast, setToast] = useState(null);
+
+    // Dynamic responsive width
+    const { width: windowWidth } = useWindowDimensions();
+    const isMobile = windowWidth < 768;
 
     // Super Admin Portal Mode Detection
     const [isSuperPortal, setIsSuperPortal] = useState(() => {
@@ -61,7 +66,6 @@ export default function App() {
 
             if (savedUser && savedToken) {
                 const userData = JSON.parse(savedUser);
-                // Security check: If in normal mode but found superadmin in shared storage (edge case), ignore
                 if (!isSuperPortal && userData.role === 'superadmin') return;
 
                 setUser(userData);
@@ -101,13 +105,12 @@ export default function App() {
             } else {
                 console.log(`⚠️ No se encontró restaurante. Creando uno automáticamente (Self-Healing)...`);
                 try {
-                    // Self-healing: Create it now!
                     const newRest = await api.ensureRestaurant(userId, "Mi Restaurante");
                     console.log(`✨ Restaurante creado/recuperado:`, newRest);
                     setRestaurant(newRest);
                 } catch (err) {
                     console.error("❌ Falló autocuración de restaurante:", err);
-                    setRestaurant(null); // Fallback UI will show
+                    setRestaurant(null);
                 }
             }
         } catch (e) {
@@ -159,7 +162,13 @@ export default function App() {
         setTimeout(() => setToast(null), 3000);
     };
 
+    const navigateTo = (screen) => {
+        setCurrentScreen(screen);
+        if (screen === 'orders') setPendingOrdersCount(0);
+        if (isMobile) setSidebarOpen(false); // Auto-close on mobile
+    };
 
+    // --- AUTH SCREENS ---
     if (!user) {
         if (isSuperPortal) {
             return <SuperAdminLoginScreen onLoginSuccess={handleLogin} />;
@@ -167,50 +176,46 @@ export default function App() {
         return <AuthScreen onLoginSuccess={handleLogin} />;
     }
 
-    // 4. SUPER ADMIN INTERFACE (Strict Separation)
-    if (user.role === 'superadmin') {
-        return (
-            <View style={styles.container}>
-                {/* Simplified Sidebar for Super Admin */}
-                <View style={styles.sidebar}>
-                    <View style={styles.branding}>
+    // --- SIDEBAR COMPONENT (shared between super admin and regular) ---
+    const renderSidebar = (isSuperAdmin = false) => (
+        <View style={[
+            styles.sidebar,
+            isMobile && styles.sidebarMobile
+        ]}>
+            {/* Close button on mobile */}
+            {isMobile && (
+                <TouchableOpacity
+                    style={styles.closeBtn}
+                    onPress={() => setSidebarOpen(false)}
+                >
+                    <Ionicons name="close" size={28} color={colors.textSecondary} />
+                </TouchableOpacity>
+            )}
+
+            <View style={styles.branding}>
+                {isSuperAdmin ? (
+                    <>
                         <Text style={styles.logo}>⚡ Pappi<Text style={{ color: colors.primary }}>GOD</Text></Text>
                         <Text style={styles.welcomeText}>Super Admin Access</Text>
-                    </View>
-
-                    <TouchableOpacity style={[styles.menuItem, styles.menuItemActive]}>
-                        <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
-                        <Text style={[styles.menuText, styles.menuTextActive]}>Aprobaciones</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-                        <Ionicons name="log-out-outline" size={20} color={colors.danger} />
-                        <Text style={{ color: colors.danger, fontWeight: 'bold', marginLeft: 10 }}>Cerrar Sesión</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Content Area */}
-                <View style={styles.content}>
-                    <SuperAdminScreen onExit={() => { }} />
-                </View>
-                <StatusBar style="auto" />
+                    </>
+                ) : (
+                    <>
+                        <Text style={styles.logo}>Pappi<Text style={{ color: colors.primary }}>Negocio</Text></Text>
+                        <Text style={styles.welcomeText}>Hola, {user.name}</Text>
+                    </>
+                )}
             </View>
-        );
-    }
 
-    // 5. STANDARD RESTAURANT OWNER INTERFACE
-    return (
-        <View style={styles.container}>
-            <View style={styles.sidebar}>
-                <View style={styles.branding}>
-                    <Text style={styles.logo}>Pappi<Text style={{ color: colors.primary }}>Negocio</Text></Text>
-                    <Text style={styles.welcomeText}>Hola, {user.name}</Text>
-                </View>
-
+            {isSuperAdmin ? (
+                <TouchableOpacity style={[styles.menuItem, styles.menuItemActive]}>
+                    <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
+                    <Text style={[styles.menuText, styles.menuTextActive]}>Aprobaciones</Text>
+                </TouchableOpacity>
+            ) : (
                 <View style={styles.navMenu}>
                     <TouchableOpacity
                         style={[styles.menuItem, currentScreen === 'dashboard' && styles.menuItemActive]}
-                        onPress={() => setCurrentScreen('dashboard')}
+                        onPress={() => navigateTo('dashboard')}
                     >
                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                             <Ionicons name="stats-chart" size={20} color={currentScreen === 'dashboard' ? colors.primary : colors.textSecondary} />
@@ -220,10 +225,7 @@ export default function App() {
 
                     <TouchableOpacity
                         style={[styles.menuItem, currentScreen === 'orders' && styles.menuItemActive]}
-                        onPress={() => {
-                            setCurrentScreen('orders');
-                            setPendingOrdersCount(0);
-                        }}
+                        onPress={() => navigateTo('orders')}
                     >
                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                             <MaterialCommunityIcons name="motorbike" size={20} color={currentScreen === 'orders' ? colors.primary : colors.textSecondary} />
@@ -238,7 +240,7 @@ export default function App() {
 
                     <TouchableOpacity
                         style={[styles.menuItem, currentScreen === 'menu' && styles.menuItemActive]}
-                        onPress={() => setCurrentScreen('menu')}
+                        onPress={() => navigateTo('menu')}
                     >
                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                             <Ionicons name="fast-food" size={20} color={currentScreen === 'menu' ? colors.primary : colors.textSecondary} />
@@ -248,7 +250,7 @@ export default function App() {
 
                     <TouchableOpacity
                         style={[styles.menuItem, currentScreen === 'config' && styles.menuItemActive]}
-                        onPress={() => setCurrentScreen('config')}
+                        onPress={() => navigateTo('config')}
                     >
                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                             <Ionicons name="settings" size={20} color={currentScreen === 'config' ? colors.primary : colors.textSecondary} />
@@ -256,13 +258,83 @@ export default function App() {
                         </View>
                     </TouchableOpacity>
                 </View>
+            )}
 
-                <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-                    <Ionicons name="log-out-outline" size={20} color={colors.danger} />
-                    <Text style={{ color: colors.danger, fontWeight: 'bold', marginLeft: 10 }}>Cerrar Sesión</Text>
-                </TouchableOpacity>
+            <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+                <Ionicons name="log-out-outline" size={20} color={colors.danger} />
+                <Text style={{ color: colors.danger, fontWeight: 'bold', marginLeft: 10 }}>Cerrar Sesión</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    // --- MOBILE TOP BAR ---
+    const renderMobileTopBar = () => (
+        <View style={styles.mobileTopBar}>
+            <TouchableOpacity
+                style={styles.hamburgerBtn}
+                onPress={() => setSidebarOpen(true)}
+            >
+                <Ionicons name="menu" size={26} color="white" />
+            </TouchableOpacity>
+            <Text style={styles.mobileTitle}>
+                Pappi<Text style={{ color: colors.primary }}>Negocio</Text>
+            </Text>
+            <View style={{ width: 40 }} />
+        </View>
+    );
+
+    // 4. SUPER ADMIN INTERFACE
+    if (user.role === 'superadmin') {
+        return (
+            <View style={[styles.container, !isMobile && { flexDirection: 'row' }]}>
+                {/* Mobile top bar */}
+                {isMobile && renderMobileTopBar()}
+
+                {/* Sidebar: always visible on desktop, overlay on mobile */}
+                {isMobile ? (
+                    sidebarOpen && (
+                        <>
+                            <TouchableOpacity
+                                style={styles.overlay}
+                                activeOpacity={1}
+                                onPress={() => setSidebarOpen(false)}
+                            />
+                            {renderSidebar(true)}
+                        </>
+                    )
+                ) : (
+                    renderSidebar(true)
+                )}
+
+                <View style={styles.content}>
+                    <SuperAdminScreen onExit={() => { }} />
+                </View>
+                <StatusBar style="auto" />
             </View>
+        );
+    }
 
+    // 5. STANDARD RESTAURANT OWNER INTERFACE
+    return (
+        <View style={[styles.container, !isMobile && { flexDirection: 'row' }]}>
+            {/* Mobile top bar */}
+            {isMobile && renderMobileTopBar()}
+
+            {/* Sidebar: always visible on desktop, overlay on mobile */}
+            {isMobile ? (
+                sidebarOpen && (
+                    <>
+                        <TouchableOpacity
+                            style={styles.overlay}
+                            activeOpacity={1}
+                            onPress={() => setSidebarOpen(false)}
+                        />
+                        {renderSidebar(false)}
+                    </>
+                )
+            ) : (
+                renderSidebar(false)
+            )}
 
             <View style={styles.content}>
                 {!restaurant ? (
@@ -306,16 +378,76 @@ export default function App() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        flexDirection: Platform.OS === 'web' || Dimensions.get('window').width > 768 ? 'row' : 'column',
-        backgroundColor: '#121212', // Deep Dark BG
+        flexDirection: 'column', // Always column, sidebar handled dynamically
+        backgroundColor: '#121212',
+        ...Platform.select({
+            web: { minHeight: '100vh' }
+        })
     },
+    // --- MOBILE TOP BAR ---
+    mobileTopBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: '#000',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        paddingTop: Platform.OS === 'web' ? 12 : 50, // Safe area
+        borderBottomWidth: 1,
+        borderBottomColor: '#222',
+        zIndex: 10,
+    },
+    hamburgerBtn: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255,255,255,0.08)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    mobileTitle: {
+        color: 'white',
+        fontSize: 20,
+        fontWeight: 'bold',
+        letterSpacing: -0.5,
+    },
+    // --- OVERLAY ---
+    overlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        zIndex: 99,
+    },
+    // --- SIDEBAR ---
     sidebar: {
-        width: Platform.OS === 'web' ? 260 : '100%',
+        width: 260,
         backgroundColor: '#000000',
         padding: 25,
-        minHeight: Platform.OS === 'web' ? '100vh' : 80,
         borderRightWidth: 1,
-        borderRightColor: '#222'
+        borderRightColor: '#222',
+        ...Platform.select({
+            web: { minHeight: '100vh' }
+        })
+    },
+    sidebarMobile: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        width: 280,
+        zIndex: 100,
+        paddingTop: 20,
+        ...Platform.select({
+            web: { minHeight: '100vh', boxShadow: '4px 0 20px rgba(0,0,0,0.5)' }
+        })
+    },
+    closeBtn: {
+        alignSelf: 'flex-end',
+        padding: 8,
+        marginBottom: 10,
     },
     branding: {
         marginBottom: 20
@@ -365,7 +497,7 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        backgroundColor: colors.bgDark
+        backgroundColor: colors.bgDark,
     },
     badge: {
         backgroundColor: colors.primary,
@@ -403,5 +535,3 @@ const styles = StyleSheet.create({
         fontSize: 16
     }
 });
-
-

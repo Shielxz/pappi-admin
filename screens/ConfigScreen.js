@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image, Platform, useWindowDimensions } from 'react-native';
 import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 import ImageUploader from '../components/ImageUploader';
@@ -11,6 +11,8 @@ const API_URL = ACTUAL_API_URL + '/menu';
 
 export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
     const [name, setName] = useState('');
+    const { width: windowWidth } = useWindowDimensions();
+    const isMobile = windowWidth < 768;
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
     const [lat, setLat] = useState('');
@@ -103,8 +105,8 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
         <ScrollView style={styles.container}>
             <Text style={styles.header}>Configuración del Restaurante</Text>
 
-            <View style={styles.topLayout}>
-                <View style={styles.logoSection}>
+            <View style={[styles.topLayout, isMobile && { flexDirection: 'column' }]}>
+                <View style={[styles.logoSection, isMobile && { width: '100%' }]}>
                     <ImageUploader
                         label="Logo"
                         imagePreview={imagePreview}

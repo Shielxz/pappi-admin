@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Platform, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Platform, Dimensions, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { colors } from '../theme/colors';
 import { API_URL, DEFAULT_HEADERS } from '../services/config';
@@ -23,6 +23,8 @@ const CustomTooltip = ({ active, payload, label }) => {
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function DashboardScreen({ user, restaurant }) {
+    const { width: windowWidth } = useWindowDimensions();
+    const isMobile = windowWidth < 768;
     const [summary, setSummary] = useState(null);
     const [salesData, setSalesData] = useState([]);
     const [statusData, setStatusData] = useState([]);
@@ -119,15 +121,15 @@ export default function DashboardScreen({ user, restaurant }) {
     };
 
     return (
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            <View style={styles.headerRow}>
+        <ScrollView style={[styles.container, isMobile && { padding: 16 }]} showsVerticalScrollIndicator={false}>
+            <View style={[styles.headerRow, isMobile && { flexDirection: 'column', alignItems: 'flex-start', gap: 12 }]}>
                 <View>
-                    <Text style={styles.pageTitle}>Dashboard General</Text>
+                    <Text style={[styles.pageTitle, isMobile && { fontSize: 24 }]}>Dashboard General</Text>
                     <Text style={styles.pageSubtitle}>Resumen de actividad en tiempo real</Text>
                 </View>
 
                 {/* ADVANCED FILTERS */}
-                <View style={styles.filterContainer}>
+                <View style={[styles.filterContainer, isMobile && { flexWrap: 'wrap' }]}>
                     {['today', 'week', 'month'].map((range) => (
                         <TouchableOpacity
                             key={range}
@@ -141,51 +143,53 @@ export default function DashboardScreen({ user, restaurant }) {
                     ))}
 
                     {/* Range Picker - Styled for Dark Mode */}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#222', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, marginLeft: 10 }}>
-                        <Text style={{ color: '#888', marginRight: 8, fontSize: 12, fontWeight: '600' }}>Desde:</Text>
-                        <input
-                            type="date"
-                            value={customStartDate}
-                            style={{
-                                background: '#333',
-                                border: '1px solid #444',
-                                color: 'white',
-                                fontSize: 12,
-                                padding: '4px 8px',
-                                borderRadius: '6px',
-                                outline: 'none',
-                                colorScheme: 'dark'
-                            }}
-                            onChange={(e) => {
-                                setCustomStartDate(e.target.value);
-                                if (e.target.value) setTimeRange('range');
-                            }}
-                        />
-                        <Text style={{ color: '#888', marginHorizontal: 8, fontSize: 12, fontWeight: '600' }}>Hasta:</Text>
-                        <input
-                            type="date"
-                            value={customEndDate}
-                            style={{
-                                background: '#333',
-                                border: '1px solid #444',
-                                color: 'white',
-                                fontSize: 12,
-                                padding: '4px 8px',
-                                borderRadius: '6px',
-                                outline: 'none',
-                                colorScheme: 'dark'
-                            }}
-                            onChange={(e) => {
-                                setCustomEndDate(e.target.value);
-                                if (e.target.value) setTimeRange('range');
-                            }}
-                        />
-                    </View>
+                    {!isMobile && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#222', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, marginLeft: 10 }}>
+                            <Text style={{ color: '#888', marginRight: 8, fontSize: 12, fontWeight: '600' }}>Desde:</Text>
+                            <input
+                                type="date"
+                                value={customStartDate}
+                                style={{
+                                    background: '#333',
+                                    border: '1px solid #444',
+                                    color: 'white',
+                                    fontSize: 12,
+                                    padding: '4px 8px',
+                                    borderRadius: '6px',
+                                    outline: 'none',
+                                    colorScheme: 'dark'
+                                }}
+                                onChange={(e) => {
+                                    setCustomStartDate(e.target.value);
+                                    if (e.target.value) setTimeRange('range');
+                                }}
+                            />
+                            <Text style={{ color: '#888', marginHorizontal: 8, fontSize: 12, fontWeight: '600' }}>Hasta:</Text>
+                            <input
+                                type="date"
+                                value={customEndDate}
+                                style={{
+                                    background: '#333',
+                                    border: '1px solid #444',
+                                    color: 'white',
+                                    fontSize: 12,
+                                    padding: '4px 8px',
+                                    borderRadius: '6px',
+                                    outline: 'none',
+                                    colorScheme: 'dark'
+                                }}
+                                onChange={(e) => {
+                                    setCustomEndDate(e.target.value);
+                                    if (e.target.value) setTimeRange('range');
+                                }}
+                            />
+                        </View>
+                    )}
                 </View>
             </View>
 
             {/* TOP METRICS ROW */}
-            <View style={styles.statsGrid}>
+            <View style={[styles.statsGrid, isMobile && { gap: 12 }]}>
                 <StatCard title="Ventas Totales" value={`$${summary?.totalSales?.toFixed(2) || '0.00'}`} icon="cash-outline" color="#00E676" />
                 <StatCard title="Pedidos" value={summary?.totalOrders || 0} icon="receipt-outline" color="#2979FF" />
                 <StatCard title="Ticket Promedio" value={`$${summary?.avgTicket?.toFixed(2) || '0.00'}`} icon="analytics-outline" color="#FF4500" />
@@ -193,14 +197,14 @@ export default function DashboardScreen({ user, restaurant }) {
             </View>
 
             {/* CHARTS ROW */}
-            <View style={styles.chartsRow}>
+            <View style={[styles.chartsRow, isMobile && { gap: 16 }]}>
                 {/* SALES AREA CHART */}
-                <View style={[styles.chartCard, { flex: 2 }]}>
+                <View style={[styles.chartCard, { flex: 2 }, isMobile && { minWidth: 0, padding: 12 }]}>
                     <Text style={styles.chartTitle}>{getChartTitle()}</Text>
-                    <View style={{ height: 350, width: '100%' }}>
+                    <View style={{ height: isMobile ? 220 : 350, width: '100%' }}>
                         {Platform.OS === 'web' ? (
                             <div style={{ width: '100%', height: '100%' }}>
-                                <ResponsiveContainer width={600} height={320}>
+                                <ResponsiveContainer width={isMobile ? '100%' : 600} height={isMobile ? 200 : 320}>
                                     <AreaChart data={salesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                         <defs>
                                             <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
@@ -337,7 +341,7 @@ const styles = StyleSheet.create({
     },
     statCard: {
         flex: 1,
-        minWidth: 240,
+        minWidth: 200,
         backgroundColor: colors.bgCard,
         borderRadius: 20, // Softer corners
         padding: 24,
@@ -386,7 +390,7 @@ const styles = StyleSheet.create({
         padding: 24,
         borderWidth: 1,
         borderColor: colors.glassBorder,
-        minWidth: 350,
+        minWidth: 280,
         ...Platform.select({
             web: {
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',

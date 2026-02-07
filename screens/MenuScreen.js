@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Modal, Image, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Modal, Image, Platform, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 import ImageCropperModal from '../components/ImageCropperModal';
@@ -17,6 +17,8 @@ const MAX_IMAGE_DIMENSION = 1200; // 1200px
 export default function MenuScreen({ user, restaurant }) {
 
     const [categories, setCategories] = useState([]);
+    const { width: windowWidth } = useWindowDimensions();
+    const isMobile = windowWidth < 768;
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [products, setProducts] = useState([]);
 
@@ -652,6 +654,7 @@ export default function MenuScreen({ user, restaurant }) {
 
 const styles = StyleSheet.create({
     container: { flex: 1, padding: 30 },
+    containerMobile: { padding: 16 },
     header: { fontSize: 32, fontWeight: 'bold', marginBottom: 20, color: colors.textPrimary },
     backBtn: { marginBottom: 20, flexDirection: 'row', alignItems: 'center' },
     backBtnText: { fontSize: 16, color: colors.accent, fontWeight: '600', marginLeft: 5 },
@@ -683,6 +686,8 @@ const styles = StyleSheet.create({
     categoriesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 20 },
     categoryCard: {
         width: 200,
+        minWidth: 150,
+        maxWidth: '100%',
         backgroundColor: colors.bgCard,
         borderRadius: 16,
         padding: 15,
@@ -710,6 +715,8 @@ const styles = StyleSheet.create({
     productsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 20, marginTop: 10 },
     productCard: {
         width: 220,
+        minWidth: 160,
+        maxWidth: '100%',
         backgroundColor: colors.bgCard,
         borderRadius: 16,
         padding: 15,

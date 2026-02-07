@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Platform, useWindowDimensions } from 'react-native';
 import io from 'socket.io-client';
 
 import { API_URL, SOCKET_URL, DEFAULT_HEADERS } from '../services/config';
@@ -12,6 +12,8 @@ const ACTUAL_SOCKET_URL = SOCKET_URL;
 
 export default function OrdersScreen({ user, restaurant, socket }) {
     const [orders, setOrders] = useState([]);
+    const { width: windowWidth } = useWindowDimensions();
+    const isMobile = windowWidth < 768;
     console.log(`[OrdersScreen] Renderizando... Restaurante ID: ${restaurant.id}, Socket: ${socket ? 'Conectado' : 'Nulo'}`);
 
     useEffect(() => {
@@ -148,9 +150,9 @@ export default function OrdersScreen({ user, restaurant, socket }) {
 
 
     return (
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <ScrollView style={[styles.container, isMobile && { padding: 16 }]} showsVerticalScrollIndicator={false}>
             <View style={styles.headerRow}>
-                <Text style={styles.pageTitle}>Gestión de Pedidos</Text>
+                <Text style={[styles.pageTitle, isMobile && { fontSize: 22 }]}>Gestión de Pedidos</Text>
                 <TouchableOpacity style={styles.refreshBtn} onPress={loadOrders}>
                     <Ionicons name="refresh" size={20} color={colors.textPrimary} />
                 </TouchableOpacity>
@@ -175,7 +177,7 @@ export default function OrdersScreen({ user, restaurant, socket }) {
                         </Text>
                     </View>
 
-                    <View style={styles.grid}>
+                    <View style={[styles.grid, isMobile && { gap: 12 }]}>
                         {groupedOrders[status].map(order => (
                             <View key={order.id} style={styles.orderCard}>
                                 <View style={styles.orderHeader}>
@@ -285,7 +287,8 @@ const styles = StyleSheet.create({
         backgroundColor: colors.bgCard,
         borderRadius: 16,
         padding: 20,
-        width: Platform.OS === 'web' ? 300 : '100%',
+        width: Platform.OS === 'web' ? 320 : '100%',
+        maxWidth: '100%',
         borderWidth: 1,
         borderColor: colors.glassBorder,
         ...Platform.select({
