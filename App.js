@@ -19,10 +19,14 @@ import { api } from './services/api';
 if (Platform.OS === 'web') {
     const style = document.createElement('style');
     style.textContent = `
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #121212; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #333 #121212;
+        }
+        ::-webkit-scrollbar { width: 8px !important; height: 8px !important; }
+        ::-webkit-scrollbar-track { background: #121212 !important; }
+        ::-webkit-scrollbar-thumb { background: #333 !important; border-radius: 4px !important; }
+        ::-webkit-scrollbar-thumb:hover { background: #555 !important; }
     `;
     document.head.appendChild(style);
 }

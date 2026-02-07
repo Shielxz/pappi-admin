@@ -155,7 +155,7 @@ export default function DashboardScreen({ user, restaurant }) {
                         {Platform.OS === 'web' ? (
                             salesData && salesData.length > 0 ? (
                                 <div style={{ width: '100%', height: '100%' }}>
-                                    <ResponsiveContainer width="100%" height="100%">
+                                    <ResponsiveContainer width={600} height={320}>
                                         <AreaChart data={salesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                             <defs>
                                                 <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
@@ -213,7 +213,7 @@ export default function DashboardScreen({ user, restaurant }) {
                         {Platform.OS === 'web' ? (
                             statusData && statusData.length > 0 ? (
                                 <div style={{ width: '100%', height: '100%' }}>
-                                    <ResponsiveContainer width="100%" height="100%">
+                                    <ResponsiveContainer width={300} height={320}>
                                         <PieChart>
                                             <Pie
                                                 data={statusData}

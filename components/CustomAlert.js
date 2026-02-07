@@ -9,9 +9,11 @@ import { Ionicons } from '@expo/vector-icons';
  * @param {string} title - Alert title
  * @param {string} message - Alert body text
  * @param {string} type - 'success' | 'error' | 'info'
- * @param {Function} onClose - Callback when closed
+ * @param {boolean} showCancel - Whether to show cancel button
+ * @param {Function} onConfirm - Callback when confirmed (if showCancel is true)
+ * @param {string} cancelText - Text for cancel button
  */
-export const CustomAlert = ({ visible, title, message, type = 'info', onClose }) => {
+export const CustomAlert = ({ visible, title, message, type = 'info', onClose, showCancel = false, onConfirm, cancelText = 'Cancelar' }) => {
     if (!visible) return null;
 
     let iconName = 'information-circle';
@@ -39,9 +41,19 @@ export const CustomAlert = ({ visible, title, message, type = 'info', onClose })
                     </View>
                     <Text style={styles.title}>{title}</Text>
                     <Text style={styles.message}>{message}</Text>
-                    <TouchableOpacity style={styles.button} onPress={onClose}>
-                        <Text style={styles.buttonText}>Aceptar</Text>
-                    </TouchableOpacity>
+                    <View style={styles.buttonRow}>
+                        {showCancel && (
+                            <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={onClose}>
+                                <Text style={styles.cancelButtonText}>{cancelText}</Text>
+                            </TouchableOpacity>
+                        )}
+                        <TouchableOpacity
+                            style={[styles.button, showCancel && styles.confirmButton]}
+                            onPress={showCancel ? onConfirm : onClose}
+                        >
+                            <Text style={styles.buttonText}>{showCancel ? 'Confirmar' : 'Aceptar'}</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
         </Modal>
@@ -92,17 +104,37 @@ const styles = StyleSheet.create({
         marginBottom: 24,
         lineHeight: 22
     },
+    buttonRow: {
+        flexDirection: 'row',
+        gap: 12,
+        width: '100%',
+        justifyContent: 'center'
+    },
     button: {
         backgroundColor: colors.primary,
         paddingVertical: 12,
-        paddingHorizontal: 30,
+        paddingHorizontal: 20,
         borderRadius: 12,
-        width: '100%',
-        alignItems: 'center'
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    cancelButton: {
+        backgroundColor: '#333', // Dark gray for cancel
+        borderWidth: 1,
+        borderColor: '#555'
+    },
+    confirmButton: {
+        backgroundColor: colors.danger, // Red for dangerous actions like delete
     },
     buttonText: {
         color: '#000',
         fontWeight: 'bold',
+        fontSize: 16
+    },
+    cancelButtonText: {
+        color: '#fff',
+        fontWeight: '600',
         fontSize: 16
     }
 });

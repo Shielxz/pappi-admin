@@ -4,6 +4,7 @@ import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 import ImageCropperModal from '../components/ImageCropperModal';
 import ImageUploader from '../components/ImageUploader';
+import { CustomAlert } from '../components/CustomAlert'; // Import CustomAlert
 import { getCardImage, checkImageDimensions, formatFileSize, isImageTooLarge } from '../utils/imageOptimization';
 
 
@@ -46,6 +47,45 @@ export default function MenuScreen({ user, restaurant }) {
     const showNotification = (message, type = 'info') => {
         setNotification({ message, type });
         setTimeout(() => setNotification(null), 3000);
+    };
+
+    // Custom Alert State
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info',
+        showCancel: false,
+        onConfirm: null
+    });
+
+    const showAlert = (title, message, type = 'info') => {
+        setAlertConfig({
+            visible: true,
+            title,
+            message,
+            type,
+            showCancel: false,
+            onConfirm: null
+        });
+    };
+
+    const showConfirm = (title, message, onConfirm) => {
+        setAlertConfig({
+            visible: true,
+            title,
+            message,
+            type: 'warning',
+            showCancel: true,
+            onConfirm: () => {
+                setAlertConfig(prev => ({ ...prev, visible: false }));
+                onConfirm();
+            }
+        });
+    };
+
+    const closeAlert = () => {
+        setAlertConfig(prev => ({ ...prev, visible: false }));
     };
 
     useEffect(() => {
@@ -143,7 +183,7 @@ export default function MenuScreen({ user, restaurant }) {
     };
 
     const deleteCategory = async (id) => {
-        const confirmDelete = async () => {
+        showConfirm("Eliminar Categoría", "¿Estás seguro de que deseas eliminar esta categoría? Esto no se puede deshacer.", async () => {
             try {
                 await fetch(`${API_URL}/categories/${id}`, {
                     method: 'DELETE',
@@ -154,25 +194,11 @@ export default function MenuScreen({ user, restaurant }) {
                     setSelectedCategory(null);
                     setProducts([]);
                 }
+                showAlert("Éxito", "Categoría eliminada", "success");
             } catch (e) {
-                Alert.alert("Error", e.message);
+                showAlert("Error", e.message, "error");
             }
-        };
-
-        if (Platform.OS === 'web') {
-            if (window.confirm("¿Eliminar esta categoría?")) {
-                confirmDelete();
-            }
-        } else {
-            Alert.alert("Confirmar", "¿Eliminar esta categoría?", [
-                { text: "Cancelar", style: "cancel" },
-                {
-                    text: "Eliminar",
-                    style: "destructive",
-                    onPress: confirmDelete
-                }
-            ]);
-        }
+        });
     };
 
     const saveProduct = async () => {
@@ -213,37 +239,23 @@ export default function MenuScreen({ user, restaurant }) {
             setShowProductModal(false);
             loadProductsByCategory(selectedCategory.id);
         } catch (e) {
-            Alert.alert("Error", e.message);
+            showAlert("Error", e.message, "error");
         }
     };
 
     const deleteProduct = async (id) => {
-        const confirmDelete = async () => {
+        showConfirm("Eliminar Producto", "¿Estás seguro de que deseas eliminar este producto?", async () => {
             try {
                 await fetch(`${API_URL}/products/${id}`, {
                     method: 'DELETE',
                     headers: DEFAULT_HEADERS
                 });
                 loadProductsByCategory(selectedCategory.id);
+                showAlert("Éxito", "Producto eliminado", "success");
             } catch (e) {
-                Alert.alert("Error", e.message);
+                showAlert("Error", e.message, "error");
             }
-        };
-
-        if (Platform.OS === 'web') {
-            if (window.confirm("¿Eliminar este producto?")) {
-                confirmDelete();
-            }
-        } else {
-            Alert.alert("Confirmar", "¿Eliminar este producto?", [
-                { text: "Cancelar", style: "cancel" },
-                {
-                    text: "Eliminar",
-                    style: "destructive",
-                    onPress: confirmDelete
-                }
-            ]);
-        }
+        });
     };
 
     const resetCategoryForm = () => {
@@ -602,6 +614,17 @@ export default function MenuScreen({ user, restaurant }) {
                     <Text style={styles.notificationText}>{notification.message}</Text>
                 </View>
             )}
+
+            {/* CUSTOM ALERT MODAL */}
+            <CustomAlert
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                showCancel={alertConfig.showCancel}
+                onConfirm={alertConfig.onConfirm}
+                onClose={closeAlert}
+            />
         </ScrollView>
     );
 }
