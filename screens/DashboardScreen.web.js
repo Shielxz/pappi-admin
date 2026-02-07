@@ -188,6 +188,58 @@ export default function DashboardScreen({ user, restaurant }) {
                 </View>
             </View>
 
+            {/* DATE RANGE INPUTS - Mobile friendly */}
+            {isMobile && (
+                <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+                    <View style={{ flex: 1, minWidth: 120 }}>
+                        <Text style={{ color: '#888', fontSize: 11, marginBottom: 4 }}>Desde:</Text>
+                        <input
+                            type="date"
+                            value={customStartDate}
+                            style={{
+                                background: '#222',
+                                border: '1px solid #333',
+                                color: 'white',
+                                fontSize: 13,
+                                padding: '8px 10px',
+                                borderRadius: '8px',
+                                outline: 'none',
+                                colorScheme: 'dark',
+                                width: '100%',
+                                boxSizing: 'border-box'
+                            }}
+                            onChange={(e) => {
+                                setCustomStartDate(e.target.value);
+                                if (e.target.value) setTimeRange('range');
+                            }}
+                        />
+                    </View>
+                    <View style={{ flex: 1, minWidth: 120 }}>
+                        <Text style={{ color: '#888', fontSize: 11, marginBottom: 4 }}>Hasta:</Text>
+                        <input
+                            type="date"
+                            value={customEndDate}
+                            style={{
+                                background: '#222',
+                                border: '1px solid #333',
+                                color: 'white',
+                                fontSize: 13,
+                                padding: '8px 10px',
+                                borderRadius: '8px',
+                                outline: 'none',
+                                colorScheme: 'dark',
+                                width: '100%',
+                                boxSizing: 'border-box'
+                            }}
+                            onChange={(e) => {
+                                setCustomEndDate(e.target.value);
+                                if (e.target.value) setTimeRange('range');
+                            }}
+                        />
+                    </View>
+                </View>
+            )}
+
             {/* TOP METRICS ROW */}
             <View style={[styles.statsGrid, isMobile && { gap: 12 }]}>
                 <StatCard title="Ventas Totales" value={`$${summary?.totalSales?.toFixed(2) || '0.00'}`} icon="cash-outline" color="#00E676" />
@@ -197,9 +249,9 @@ export default function DashboardScreen({ user, restaurant }) {
             </View>
 
             {/* CHARTS ROW */}
-            <View style={[styles.chartsRow, isMobile && { gap: 16 }]}>
+            <View style={[styles.chartsRow, isMobile && { flexDirection: 'column', gap: 16 }]}>
                 {/* SALES AREA CHART */}
-                <View style={[styles.chartCard, { flex: 2 }, isMobile && { minWidth: 0, padding: 12 }]}>
+                <View style={[styles.chartCard, { flex: 2 }, isMobile && { minWidth: 0, padding: 12, flex: 'auto' }]}>
                     <Text style={styles.chartTitle}>{getChartTitle()}</Text>
                     <View style={{ height: isMobile ? 220 : 350, width: '100%' }}>
                         {Platform.OS === 'web' ? (
@@ -230,12 +282,12 @@ export default function DashboardScreen({ user, restaurant }) {
                 </View>
 
                 {/* STATUS DONUT CHART */}
-                <View style={[styles.chartCard, { flex: 1 }]}>
+                <View style={[styles.chartCard, { flex: 1 }, isMobile && { minWidth: 0, padding: 12, flex: 'auto' }]}>
                     <Text style={styles.chartTitle}>Estado de Pedidos</Text>
-                    <View style={{ height: 350, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                    <View style={{ height: isMobile ? 250 : 350, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
                         {Platform.OS === 'web' ? (
                             <div style={{ width: '100%', height: '100%' }}>
-                                <ResponsiveContainer width={300} height={320}>
+                                <ResponsiveContainer width={'100%'} height={isMobile ? 230 : 320}>
                                     <PieChart>
                                         <Pie
                                             data={statusData}

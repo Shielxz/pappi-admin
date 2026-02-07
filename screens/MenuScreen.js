@@ -511,8 +511,8 @@ export default function MenuScreen({ user, restaurant }) {
     }
 
     return (
-        <ScrollView style={styles.container}>
-            <Text style={styles.header}>Mis Menús</Text>
+        <ScrollView style={[styles.container, isMobile && { padding: 16 }]}>
+            <Text style={[styles.header, isMobile && { fontSize: 24 }]}>Mis Menús</Text>
 
             <TouchableOpacity style={styles.btn} onPress={() => setShowCategoryModal(true)}>
                 <Ionicons name="add-circle-outline" size={20} color="white" style={{ marginRight: 8 }} />
@@ -520,11 +520,11 @@ export default function MenuScreen({ user, restaurant }) {
             </TouchableOpacity>
 
 
-            <View style={styles.categoriesGrid}>
+            <View style={[styles.categoriesGrid, isMobile && { gap: 12 }]}>
                 {categories.map(category => (
                     <TouchableOpacity
                         key={category.id}
-                        style={styles.categoryCard}
+                        style={[styles.categoryCard, isMobile && { width: '100%' }]}
                         onPress={() => {
                             setSelectedCategory(category);
                             loadProductsByCategory(category.id);
@@ -686,8 +686,9 @@ const styles = StyleSheet.create({
     categoriesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 20 },
     categoryCard: {
         width: 200,
-        minWidth: 150,
+        minWidth: 140,
         maxWidth: '100%',
+        flexGrow: 1,
         backgroundColor: colors.bgCard,
         borderRadius: 16,
         padding: 15,

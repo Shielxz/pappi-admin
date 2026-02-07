@@ -157,9 +157,9 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
 
             <View style={styles.section}>
                 <Text style={styles.label}>📍 Ubicación del Negocio (GPS):</Text>
-                <View style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={{ flexDirection: isMobile ? 'column' : 'row', gap: 10 }}>
                     <TextInput
-                        style={[styles.input, { flex: 1 }]}
+                        style={[styles.input, !isMobile && { flex: 1 }]}
                         placeholderTextColor="#666"
                         value={lat}
                         onChangeText={setLat}
@@ -167,7 +167,7 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
                         keyboardType="numeric"
                     />
                     <TextInput
-                        style={[styles.input, { flex: 1 }]}
+                        style={[styles.input, !isMobile && { flex: 1 }]}
                         placeholderTextColor="#666"
                         value={lng}
                         onChangeText={setLng}
