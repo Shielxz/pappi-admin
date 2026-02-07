@@ -181,7 +181,7 @@ export default function App() {
         <View style={[
             styles.sidebar,
             isMobile && styles.sidebarMobile,
-            { flex: 1, justifyContent: 'space-between' }
+            isMobile && { flex: 1, justifyContent: 'space-between' }
         ]}>
             <View>
                 {/* Close button on mobile */}

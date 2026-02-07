@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
             web: { outlineStyle: 'none' }
         })
     },
-    eyeIcon: { padding: 5 },
+    eyeIcon: { padding: 8, position: 'absolute', right: 10 },
     btn: {
         backgroundColor: colors.primary,
         paddingVertical: 15,

@@ -455,7 +455,7 @@ export default function MenuScreen({ user, restaurant }) {
                                 aspectRatio={1}
                             />
 
-                            <TouchableOpacity style={styles.btn} onPress={saveProduct}>
+                            <TouchableOpacity style={[styles.btn, { marginTop: 16 }]} onPress={saveProduct}>
                                 <Text style={styles.btnText}>Guardar</Text>
                             </TouchableOpacity>
 

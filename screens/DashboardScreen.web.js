@@ -293,8 +293,8 @@ export default function DashboardScreen({ user, restaurant }) {
                                             data={statusData}
                                             cx="50%"
                                             cy="50%"
-                                            innerRadius={80}
-                                            outerRadius={100}
+                                            innerRadius={isMobile ? 55 : 80}
+                                            outerRadius={isMobile ? 75 : 100}
                                             paddingAngle={5}
                                             dataKey="value"
                                             stroke="none"
