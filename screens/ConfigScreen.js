@@ -117,16 +117,28 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
                 />
             </View>
 
-            <View style={styles.section}>
-                <Text style={styles.label}>Nombre del Restaurante:</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholderTextColor="#666"
-                    value={name}
-                    onChangeText={setName}
-                    placeholder="Mi Restaurante"
-                />
+            <View style={styles.rowContainer}>
+                <View style={[styles.section, { flex: 1, marginRight: 10 }]}>
+                    <Text style={styles.label}>Nombre del Restaurante:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholderTextColor="#666"
+                        value={name}
+                        onChangeText={setName}
+                        placeholder="Mi Restaurante"
+                    />
+                </View>
 
+                <View style={[styles.section, { flex: 1 }]}>
+                    <Text style={styles.label}>Categoría:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholderTextColor="#666"
+                        value={category}
+                        onChangeText={setCategory}
+                        placeholder="Ej: Comida Mexicana"
+                    />
+                </View>
             </View>
 
             <View style={styles.section}>
@@ -138,21 +150,8 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
                     onChangeText={setDescription}
                     placeholder="Describe tu restaurante..."
                     multiline
-                    numberOfLines={4}
+                    numberOfLines={2}
                 />
-
-            </View>
-
-            <View style={styles.section}>
-                <Text style={styles.label}>Categoría:</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholderTextColor="#666"
-                    value={category}
-                    onChangeText={setCategory}
-                    placeholder="Ej: Comida Mexicana, Fast Food, etc."
-                />
-
             </View>
 
             <View style={styles.section}>
@@ -166,7 +165,6 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
                         placeholder="Latitud"
                         keyboardType="numeric"
                     />
-
                     <TextInput
                         style={[styles.input, { flex: 1 }]}
                         placeholderTextColor="#666"
@@ -175,12 +173,10 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
                         placeholder="Longitud"
                         keyboardType="numeric"
                     />
-
                 </View>
-                <TouchableOpacity onPress={getCurrentLocation} style={{ marginTop: 10, padding: 10, backgroundColor: 'rgba(41, 121, 255, 0.2)', borderRadius: 5, alignItems: 'center' }}>
-                    <Text style={{ color: colors.accent, fontWeight: 'bold' }}>📡 Usar mi ubicación actual</Text>
+                <TouchableOpacity onPress={getCurrentLocation} style={styles.gpsBtn}>
+                    <Text style={styles.gpsBtnText}>📡 Usar mi ubicación actual</Text>
                 </TouchableOpacity>
-
             </View>
 
             <TouchableOpacity style={styles.saveBtn} onPress={saveSettings}>
@@ -202,11 +198,15 @@ export default function ConfigScreen({ user, restaurant, onRestaurantUpdate }) {
 const styles = StyleSheet.create({
     container: { flex: 1, padding: 40, maxWidth: 1000, alignSelf: 'center', width: '100%' },
     header: { fontSize: 36, fontWeight: '800', marginBottom: 30, color: colors.textPrimary, letterSpacing: -0.5 },
+    rowContainer: {
+        flexDirection: 'row',
+        width: '100%'
+    },
     section: {
         backgroundColor: colors.bgCard,
-        padding: 24,
+        padding: 16, // Reduced padding
         borderRadius: 20,
-        marginBottom: 24,
+        marginBottom: 16, // Reduced margin
         borderWidth: 1,
         borderColor: colors.glassBorder,
         ...Platform.select({
@@ -214,18 +214,18 @@ const styles = StyleSheet.create({
             default: { elevation: 2 }
         })
     },
-    label: { fontSize: 14, fontWeight: '600', marginBottom: 12, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
+    label: { fontSize: 13, fontWeight: '600', marginBottom: 8, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
     input: {
         borderWidth: 1,
         borderColor: '#333',
-        padding: 18,
+        padding: 14, // Reduced padding
         borderRadius: 12,
-        fontSize: 16,
+        fontSize: 15,
         backgroundColor: '#151515',
         color: 'white',
         fontWeight: '500'
     },
-    textArea: { minHeight: 120, textAlignVertical: 'top' },
+    textArea: { minHeight: 80, textAlignVertical: 'top' }, // Reduced height
     logoPreview: {
         width: 200,
         height: 200,
@@ -237,27 +237,29 @@ const styles = StyleSheet.create({
     },
     saveBtn: {
         backgroundColor: colors.secondary,
-        padding: 20,
+        padding: 16,
         borderRadius: 16,
         alignItems: 'center',
         marginTop: 10,
-        marginBottom: 50,
+        marginBottom: 30,
         flexDirection: 'row',
         justifyContent: 'center',
         ...Platform.select({
             web: { boxShadow: '0 8px 20px rgba(0, 230, 118, 0.25)', transition: 'all 0.2s' }
         })
     },
-    saveBtnText: { color: '#000', fontSize: 18, fontWeight: 'bold' },
+    saveBtnText: { color: '#000', fontSize: 16, fontWeight: 'bold' },
+    gpsBtn: { marginTop: 10, padding: 10, backgroundColor: 'rgba(41, 121, 255, 0.2)', borderRadius: 5, alignItems: 'center' },
+    gpsBtnText: { color: colors.accent, fontWeight: 'bold', fontSize: 13 },
     infoSection: {
         backgroundColor: 'rgba(41, 121, 255, 0.08)',
-        padding: 24,
+        padding: 16,
         borderRadius: 16,
         marginBottom: 30,
         borderWidth: 1,
         borderColor: 'rgba(41, 121, 255, 0.15)'
     },
-    infoTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 12, color: colors.accent },
-    infoText: { fontSize: 14, color: colors.textSecondary, marginBottom: 8, lineHeight: 22 }
+    infoTitle: { fontSize: 14, fontWeight: 'bold', marginBottom: 8, color: colors.accent },
+    infoText: { fontSize: 13, color: colors.textSecondary, marginBottom: 4, lineHeight: 18 }
 });
 

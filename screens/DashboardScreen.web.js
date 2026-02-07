@@ -231,11 +231,7 @@ export default function DashboardScreen({ user, restaurant }) {
                     </View>
                 </View>
             </View>
-            <Text style={{ color: 'white' }}>Gráfico solo Web</Text>
-                        )}
-        </View>
-                </View >
-            </View >
+
 
         </ScrollView >
     );
