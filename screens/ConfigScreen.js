@@ -205,17 +205,17 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         gap: 16,
         marginBottom: 16,
-        height: 200 // Fixed height for alignment
     },
     logoSection: {
-        width: 200, // Fixed width for logo column
+        width: 200,
         backgroundColor: colors.bgCard,
         borderRadius: 20,
         padding: 10,
         borderWidth: 1,
         borderColor: colors.glassBorder,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        overflow: 'hidden'
     },
     infoColumn: {
         flex: 1,

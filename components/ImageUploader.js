@@ -12,7 +12,8 @@ export default function ImageUploader({
     onImageSelect,
     onRemoveImage,
     aspectRatio = 1,
-    helperText = null
+    helperText = null,
+    compact = false
 }) {
     const fileInputRef = useRef(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -58,7 +59,7 @@ export default function ImageUploader({
         }
     };
 
-    const aspectHeight = aspectRatio === 1 ? 160 : 120; // Reduced height
+    const aspectHeight = compact ? 110 : (aspectRatio === 1 ? 160 : 120);
 
     return (
         <View style={styles.container}>
@@ -66,12 +67,14 @@ export default function ImageUploader({
             <Text style={styles.label}>{label}</Text>
 
             {/* Info Badge */}
-            <View style={styles.infoBadge}>
-                <Ionicons name="information-circle-outline" size={14} color="#888" />
-                <Text style={styles.infoText}>
-                    Máximo {MAX_SIZE_MB}MB • {MAX_DIMENSION}x{MAX_DIMENSION}px
-                </Text>
-            </View>
+            {!compact && (
+                <View style={styles.infoBadge}>
+                    <Ionicons name="information-circle-outline" size={14} color="#888" />
+                    <Text style={styles.infoText}>
+                        Máximo {MAX_SIZE_MB}MB • {MAX_DIMENSION}x{MAX_DIMENSION}px
+                    </Text>
+                </View>
+            )}
 
             {/* Upload Area */}
             {imagePreview ? (
@@ -105,8 +108,8 @@ export default function ImageUploader({
                         onDrop={handleDrop}
                         style={{
                             border: `2px dashed ${isDragging ? colors.primary : 'rgba(255, 255, 255, 0.15)'}`,
-                            borderRadius: 16,
-                            padding: 30,
+                            borderRadius: compact ? 12 : 16,
+                            padding: compact ? 15 : 30,
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
@@ -117,12 +120,12 @@ export default function ImageUploader({
                         }}
                     >
                         <View style={styles.iconContainer}>
-                            <Ionicons name="cloud-upload-outline" size={40} color={colors.primary} />
+                            <Ionicons name="cloud-upload-outline" size={compact ? 28 : 40} color={colors.primary} />
                         </View>
-                        <Text style={styles.dropzoneTitle}>
-                            {isDragging ? '¡Suelta la imagen aquí!' : 'Haz clic para seleccionar'}
+                        <Text style={[styles.dropzoneTitle, compact && { fontSize: 12 }]}>
+                            {isDragging ? '¡Suéltala!' : compact ? 'Subir logo' : 'Haz clic para seleccionar'}
                         </Text>
-                        <Text style={styles.dropzoneSubtitle}>PNG, JPG, WebP hasta {MAX_SIZE_MB}MB</Text>
+                        {!compact && <Text style={styles.dropzoneSubtitle}>PNG, JPG, WebP hasta {MAX_SIZE_MB}MB</Text>}
                     </div>
                 ) : (
                     <TouchableOpacity style={styles.dropzone} onPress={handleClick}>
@@ -156,7 +159,7 @@ export default function ImageUploader({
 
 const styles = StyleSheet.create({
     container: {
-        marginBottom: 20
+        marginBottom: 0
     },
     label: {
         fontSize: 14,

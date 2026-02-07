@@ -27,6 +27,7 @@ export default function DashboardScreen({ user, restaurant }) {
     const [salesData, setSalesData] = useState([]);
     const [statusData, setStatusData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [initialLoadDone, setInitialLoadDone] = useState(false);
 
     // Filter States
     const [timeRange, setTimeRange] = useState('today'); // 'today' | 'week' | 'month' | 'year' | 'range'
@@ -64,7 +65,7 @@ export default function DashboardScreen({ user, restaurant }) {
                 query += `&start=${customStartDate}&end=${customEndDate}`;
             }
 
-            setLoading(true);
+            if (!initialLoadDone) setLoading(true);
             const [summaryRes, salesRes, statusRes] = await Promise.all([
                 fetch(`${API_URL}/analytics/summary/${restaurant.id}${query}`, { headers: DEFAULT_HEADERS }),
                 fetch(`${API_URL}/analytics/sales-chart/${restaurant.id}${query}`, { headers: DEFAULT_HEADERS }),
@@ -82,6 +83,7 @@ export default function DashboardScreen({ user, restaurant }) {
             console.error("Error loading dashboard:", error);
         } finally {
             setLoading(false);
+            if (!initialLoadDone) setInitialLoadDone(true);
         }
     };
 
